@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Just Novel
 
-## Getting Started
+เว็บอ่านนิยายส่วนตัว — อ่านเนื้อหาตรงจากไฟล์ `.md` ในโปรเจกต์ ไม่มีฐานข้อมูล ไม่มีระบบล็อกอิน
 
-First, run the development server:
+## Stack
+
+- Next.js 14 (App Router) + TypeScript + Tailwind CSS
+- เนื้อหานิยาย: อ่านจากไฟล์ `.md` ด้วย `fs` + `gray-matter`
+- reading progress / notes / dark mode / ขนาดฟอนต์: เก็บใน `localStorage` ฝั่ง browser
+- Deploy: Vercel
+
+## เริ่มรันในเครื่อง
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| script | ทำอะไร |
+| --- | --- |
+| `npm run dev` | รัน dev server |
+| `npm run build` | build production (รันก่อน push ทุกครั้ง) |
+| `npm run start` | รัน build ที่ได้ |
+| `npm run lint` | ตรวจ ESLint |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+ไม่ต้องตั้ง environment variable ใดๆ
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## โครงสร้างเนื้อหา
 
-## Learn More
+```
+content/
+  <novel-slug>/
+    novel.json     # metadata ของเรื่อง
+    ตอนที่1.md
+    ตอนที่2.md
+```
 
-To learn more about Next.js, take a look at the following resources:
+### `novel.json`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| field | ความหมาย |
+| --- | --- |
+| `title` | ชื่อเรื่องที่แสดงบนเว็บ (จำเป็น) |
+| `subtitle` | ชื่อรอง เช่น ชื่อโรมาจิ |
+| `author` | ผู้แต่งต้นฉบับ |
+| `translator` | ผู้แปล |
+| `synopsis` | คำโปรย |
+| `status` | `ongoing` \| `completed` \| `hiatus` |
+| `tags` | อาร์เรย์ของแท็ก |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### ไฟล์ตอน
 
-## Deploy on Vercel
+- ชื่อไฟล์ต้องมีตัวเลขตอนอยู่ในนั้น (`ตอนที่7.md`) — ตัวเลขตัวแรกที่เจอใช้เป็นเลขตอนและเป็น URL
+- บรรทัด `# ...` ตัวแรกในไฟล์ถือเป็นชื่อตอน (จะไม่ถูกแสดงซ้ำในเนื้อหา)
+- ย่อหน้าคั่นด้วยบรรทัดว่าง, `---` บรรทัดเดียวคือเส้นคั่นฉาก
+- ใส่ frontmatter `title:` เพื่อ override ชื่อตอนได้
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## เพิ่มตอน / เพิ่มเรื่องใหม่
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. วางไฟล์ `.md` ใน `content/<novel-slug>/` (เรื่องใหม่ต้องมี `novel.json` ด้วย)
+2. commit แล้ว push → Vercel redeploy อัตโนมัติ
+
+ไม่มีหน้า admin สำหรับอัปโหลดเนื้อหา — เพิ่มตอนคือแก้ไฟล์ในโปรเจกต์เท่านั้น
+
+## ข้อจำกัดที่รู้ตัว
+
+- ไม่มี auth: ใครมีลิงก์ก็เข้าได้ (ไม่ประกาศเว็บ + ปิด SEO ด้วย `robots: noindex`)
+- `localStorage` ผูกกับเบราว์เซอร์นั้นๆ — ตำแหน่งอ่านล่าสุด/โน้ตไม่ sync ข้ามเครื่อง
+- เพิ่มตอนต้อง redeploy เสมอ
