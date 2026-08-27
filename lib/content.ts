@@ -17,6 +17,8 @@ export type NovelMeta = {
   synopsis?: string;
   status: NovelStatus;
   tags: string[];
+  /** path ไป static asset ใน public/ เช่น "/covers/seireishi.jpg" */
+  cover?: string;
 };
 
 export type ChapterSummary = {
@@ -67,6 +69,7 @@ function readNovelMeta(slug: string): NovelMeta {
     synopsis: data.synopsis?.trim() || undefined,
     status: data.status ?? "ongoing",
     tags: data.tags ?? [],
+    cover: data.cover?.trim() || undefined,
   };
 }
 
@@ -128,8 +131,11 @@ function readChapterFile(novelSlug: string, file: string): Chapter {
   };
 }
 
-/** อ่านทุกตอนของนิยายเรื่องหนึ่ง เรียงตามเลขตอนจากน้อยไปมาก */
-const readChapters = cache((novelSlug: string): Chapter[] => {
+/**
+ * อ่านทุกตอนของนิยายเรื่องหนึ่ง (พร้อมเนื้อหาเต็ม) เรียงตามเลขตอนจากน้อยไปมาก
+ * หน้าอ่านใช้ `getChapter` ทีละตอนพอ — ตัวนี้มีไว้ให้ lib/search.ts กวาดทั้งเรื่อง
+ */
+export const getChapters = cache((novelSlug: string): Chapter[] => {
   const dir = path.join(CONTENT_DIR, novelSlug);
   if (!fs.existsSync(dir)) return [];
 
@@ -156,7 +162,7 @@ export const getNovelSlugs = cache((): string[] => {
 
 export const getNovel = cache((slug: string): Novel | null => {
   if (!isNovelDir(slug)) return null;
-  return { ...readNovelMeta(slug), chapters: readChapters(slug).map(toSummary) };
+  return { ...readNovelMeta(slug), chapters: getChapters(slug).map(toSummary) };
 });
 
 export const getAllNovels = cache((): Novel[] =>
@@ -166,12 +172,12 @@ export const getAllNovels = cache((): Novel[] =>
 );
 
 export const getChapter = cache((slug: string, number: number): Chapter | null => {
-  return readChapters(slug).find((chapter) => chapter.number === number) ?? null;
+  return getChapters(slug).find((chapter) => chapter.number === number) ?? null;
 });
 
 /** ตอนก่อนหน้า/ถัดไป สำหรับปุ่มนำทางในหน้าอ่าน */
 export const getChapterNeighbours = cache((slug: string, number: number) => {
-  const chapters = readChapters(slug);
+  const chapters = getChapters(slug);
   const at = chapters.findIndex((chapter) => chapter.number === number);
   if (at === -1) return { prev: null, next: null };
   return {

@@ -39,6 +39,7 @@ export default function ChapterPage({ params }: Props) {
       <SiteHeader
         back={{ href: `/novel/${novel.slug}`, label: "สารบัญ" }}
         aside={`${position} / ${novel.chapters.length}`}
+        searchNovel={novel.slug}
         actions={
           <NotesButton
             novelSlug={novel.slug}

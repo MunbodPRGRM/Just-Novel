@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ResumeReading } from "@/components/resume-reading";
 import { SiteHeader } from "@/components/site-header";
@@ -36,31 +37,43 @@ export default function HomePage() {
               <li key={novel.slug}>
                 <Link
                   href={`/novel/${novel.slug}`}
-                  className="block rounded-xl border border-border bg-surface p-5 transition-colors hover:border-accent"
+                  className="flex gap-4 rounded-xl border border-border bg-surface p-5 transition-colors hover:border-accent"
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <h2 className="font-reading text-lg font-semibold leading-snug">
-                      {novel.title}
-                    </h2>
-                    <span className="mt-1 shrink-0 rounded-full bg-accent-soft px-2.5 py-1 text-xs text-accent">
-                      {STATUS_LABEL[novel.status]}
-                    </span>
-                  </div>
-
-                  {novel.subtitle ? (
-                    <p className="mt-1.5 text-xs italic text-muted">{novel.subtitle}</p>
+                  {novel.cover ? (
+                    <Image
+                      src={novel.cover}
+                      alt={novel.title}
+                      width={80}
+                      height={114}
+                      className="h-[114px] w-20 shrink-0 rounded-lg object-cover"
+                    />
                   ) : null}
 
-                  {novel.synopsis ? (
-                    <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted">
-                      {novel.synopsis}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-4">
+                      <h2 className="font-reading text-lg font-semibold leading-snug">
+                        {novel.title}
+                      </h2>
+                      <span className="mt-1 shrink-0 rounded-full bg-accent-soft px-2.5 py-1 text-xs text-accent">
+                        {STATUS_LABEL[novel.status]}
+                      </span>
+                    </div>
+
+                    {novel.subtitle ? (
+                      <p className="mt-1.5 text-xs italic text-muted">{novel.subtitle}</p>
+                    ) : null}
+
+                    {novel.synopsis ? (
+                      <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted">
+                        {novel.synopsis}
+                      </p>
+                    ) : null}
+
+                    <p className="mt-4 text-xs text-muted">
+                      {novel.chapters.length} ตอน
+                      {novel.tags.length > 0 ? ` · ${novel.tags.join(" · ")}` : ""}
                     </p>
-                  ) : null}
-
-                  <p className="mt-4 text-xs text-muted">
-                    {novel.chapters.length} ตอน
-                    {novel.tags.length > 0 ? ` · ${novel.tags.join(" · ")}` : ""}
-                  </p>
+                  </div>
                 </Link>
               </li>
             ))}

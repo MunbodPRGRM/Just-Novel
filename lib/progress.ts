@@ -108,6 +108,12 @@ export function getChapterProgress(
   return map[novelSlug]?.chapters[chapter] ?? null;
 }
 
+/** เคยอ่านเรื่องนี้ไปแล้วบ้างไหม — ใช้ตัดสินว่าจะโชว์ปุ่มล้างประวัติหรือเปล่า */
+export function hasNovelProgress(map: ProgressMap, novelSlug: string): boolean {
+  const novel = map[novelSlug];
+  return novel !== undefined && Object.keys(novel.chapters).length > 0;
+}
+
 export type Resume = ChapterProgress & { chapter: number };
 
 /** ตอนที่ค้างไว้ล่าสุดของเรื่องหนึ่ง — null ถ้ายังไม่เคยเปิดอ่าน */

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ChapterList } from "@/components/chapter-list";
 import { NotesButton } from "@/components/notes-panel";
+import { ResetProgress } from "@/components/reset-progress";
 import { ResumeReading } from "@/components/resume-reading";
 import { SiteHeader } from "@/components/site-header";
 import { getNovel, getNovelSlugs } from "@/lib/content";
@@ -34,43 +36,57 @@ export default function NovelPage({ params }: Props) {
     <>
       <SiteHeader
         back={{ href: "/", label: "คลังนิยาย" }}
+        searchNovel={novel.slug}
         actions={<NotesButton novelSlug={novel.slug} chapters={chapterLinks} />}
       />
 
       <main className="mx-auto max-w-3xl px-5 py-10">
-        <header>
-          <h1 className="font-reading text-2xl font-semibold leading-snug">
-            {novel.title}
-          </h1>
-          {novel.subtitle ? (
-            <p className="mt-2 text-sm italic text-muted">{novel.subtitle}</p>
+        <header className="flex gap-5">
+          {novel.cover ? (
+            <Image
+              src={novel.cover}
+              alt={novel.title}
+              width={128}
+              height={183}
+              priority
+              className="h-[183px] w-32 shrink-0 rounded-lg object-cover"
+            />
           ) : null}
 
-          <p className="mt-4 text-xs text-muted">
-            {[STATUS_LABEL[novel.status], `${novel.chapters.length} ตอน`, ...credits].join(
-              " · ",
-            )}
-          </p>
+          <div className="min-w-0 flex-1">
+            <h1 className="font-reading text-2xl font-semibold leading-snug">
+              {novel.title}
+            </h1>
+            {novel.subtitle ? (
+              <p className="mt-2 text-sm italic text-muted">{novel.subtitle}</p>
+            ) : null}
 
-          {novel.synopsis ? (
-            <p className="mt-5 border-l-2 border-border pl-4 text-sm leading-relaxed text-muted">
-              {novel.synopsis}
+            <p className="mt-4 text-xs text-muted">
+              {[STATUS_LABEL[novel.status], `${novel.chapters.length} ตอน`, ...credits].join(
+                " · ",
+              )}
             </p>
-          ) : null}
 
-          {novel.tags.length > 0 ? (
-            <ul className="mt-5 flex flex-wrap gap-2">
-              {novel.tags.map((tag) => (
-                <li
-                  key={tag}
-                  className="rounded-full bg-accent-soft px-2.5 py-1 text-xs text-accent"
-                >
-                  {tag}
-                </li>
-              ))}
-            </ul>
-          ) : null}
+            {novel.tags.length > 0 ? (
+              <ul className="mt-5 flex flex-wrap gap-2">
+                {novel.tags.map((tag) => (
+                  <li
+                    key={tag}
+                    className="rounded-full bg-accent-soft px-2.5 py-1 text-xs text-accent"
+                  >
+                    {tag}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
         </header>
+
+        {novel.synopsis ? (
+          <p className="mt-5 border-l-2 border-border pl-4 text-sm leading-relaxed text-muted">
+            {novel.synopsis}
+          </p>
+        ) : null}
 
         <ResumeReading
           novels={[{ slug: novel.slug, title: novel.title, chapters: chapterLinks }]}
@@ -83,14 +99,17 @@ export default function NovelPage({ params }: Props) {
             ยังไม่มีไฟล์ตอนในโฟลเดอร์ <code>content/{novel.slug}/</code>
           </p>
         ) : (
-          <ChapterList
-            novelSlug={novel.slug}
-            chapters={novel.chapters.map(({ number, title, charCount }) => ({
-              number,
-              title,
-              charCount,
-            }))}
-          />
+          <>
+            <ChapterList
+              novelSlug={novel.slug}
+              chapters={novel.chapters.map(({ number, title, charCount }) => ({
+                number,
+                title,
+                charCount,
+              }))}
+            />
+            <ResetProgress novelSlug={novel.slug} />
+          </>
         )}
       </main>
     </>
