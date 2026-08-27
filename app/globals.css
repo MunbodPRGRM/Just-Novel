@@ -33,3 +33,46 @@ body {
   --reading-size: 19px;
   --reading-leading: 2;
 }
+
+/*
+  เนื้อเรื่องในหน้าอ่าน — ผูกกับตัวแปรด้านบนทั้งหมด
+  phase 3 แค่เขียนทับ --reading-size/--reading-leading บน body ก็ปรับได้ทั้งหน้า
+*/
+.reading-body {
+  font-size: var(--reading-size);
+  line-height: var(--reading-leading);
+}
+
+.reading-body p {
+  /* ย่อหน้าไทยเว้นบรรทัดแทนการย่อหน้าแรก อ่านบนจอง่ายกว่า */
+  margin-block: 1.35em;
+  text-wrap: pretty;
+}
+
+.reading-body h2,
+.reading-body h3,
+.reading-body h4 {
+  margin-block: 2em 1em;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.reading-body h2 {
+  font-size: 1.25em;
+}
+
+.reading-body h3 {
+  font-size: 1.1em;
+}
+
+.reading-body h4 {
+  font-size: 1em;
+}
+
+.reading-body hr {
+  margin-block: 2.5em;
+  border: 0;
+  border-top: 1px solid var(--border);
+  width: 40%;
+  margin-inline: auto;
+}
