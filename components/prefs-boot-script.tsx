@@ -13,6 +13,10 @@ r.style.setProperty("color-scheme",t);
 if(typeof p.fontSize==="number")r.style.setProperty("--reading-size",p.fontSize+"px");
 if(typeof p.lineHeight==="number")r.style.setProperty("--reading-leading",String(p.lineHeight));
 r.dataset.readingFont=p.font==="sans"?"sans":"serif";
+var c=getComputedStyle(r).getPropertyValue("--background").trim();
+if(c){var m=document.querySelector('meta[name="theme-color"]');
+if(!m){m=document.createElement("meta");m.name="theme-color";document.head.appendChild(m);}
+m.content=c;}
 }catch(e){}})();`;
 
 export function PrefsBootScript() {

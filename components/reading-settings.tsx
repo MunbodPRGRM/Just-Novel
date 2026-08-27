@@ -19,9 +19,10 @@ const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
   { value: "system", label: "ตามระบบ" },
 ];
 
-const FONT_OPTIONS: { value: ReadingFont; label: string }[] = [
-  { value: "serif", label: "มีหัว" },
-  { value: "sans", label: "ไม่มีหัว" },
+/** ป้ายตัวเลือกเขียนด้วยฟอนต์ของตัวเอง — เห็นความต่างหัวตัวอักษรก่อนกดเลือก */
+const FONT_OPTIONS: { value: ReadingFont; label: string; className: string }[] = [
+  { value: "serif", label: "มีหัว", className: "font-reading" },
+  { value: "sans", label: "ไม่มีหัว", className: "font-loopless" },
 ];
 
 /** ปุ่ม "ก" บนแถบบน — เปิดแผงปรับธีม/ขนาดตัวอักษรของการอ่าน */
@@ -39,14 +40,14 @@ export function ReadingSettings() {
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         aria-label="ตั้งค่าการอ่าน"
-        className="rounded-lg border border-border px-2.5 py-1 text-sm transition-colors hover:border-accent hover:text-accent"
+        className="h-9 rounded-lg border border-border px-2.5 text-sm transition-colors hover:border-accent hover:text-accent"
       >
         <span className="font-reading">ก</span>
         <span className="font-reading text-xs">ก</span>
       </button>
 
       {open ? (
-        <div className="absolute right-0 top-full z-30 mt-2 w-72 rounded-xl border border-border bg-surface p-4 shadow-lg">
+        <div className="absolute right-0 top-full z-30 mt-2 w-[min(18rem,calc(100vw-1.5rem))] rounded-xl border border-border bg-surface p-4 shadow-lg">
           <Field label="โหมดแสดงผล">
             <Segmented
               options={THEME_OPTIONS}
@@ -119,7 +120,7 @@ function Segmented<T extends string>({
   value,
   onChange,
 }: {
-  options: { value: T; label: string }[];
+  options: { value: T; label: string; className?: string }[];
   value: T;
   onChange: (value: T) => void;
 }) {
@@ -131,7 +132,9 @@ function Segmented<T extends string>({
           type="button"
           onClick={() => onChange(option.value)}
           aria-pressed={option.value === value}
-          className={`flex-1 rounded-md px-2 py-1.5 text-xs transition-colors ${
+          className={`flex-1 rounded-md px-2 py-2 text-xs transition-colors ${
+            option.className ?? ""
+          } ${
             option.value === value
               ? "bg-accent-soft text-accent"
               : "text-muted hover:text-foreground"
@@ -199,7 +202,7 @@ function StepButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className="h-7 w-7 shrink-0 rounded-md border border-border text-sm transition-colors hover:border-accent hover:text-accent disabled:opacity-40 disabled:hover:border-border disabled:hover:text-foreground"
+      className="h-8 w-8 shrink-0 rounded-md border border-border text-sm transition-colors hover:border-accent hover:text-accent disabled:opacity-40 disabled:hover:border-border disabled:hover:text-foreground"
     >
       {children}
     </button>

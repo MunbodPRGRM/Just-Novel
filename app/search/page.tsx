@@ -45,10 +45,11 @@ export default function SearchPage({ searchParams }: Props) {
         }
       />
 
-      <main className="mx-auto max-w-3xl px-5 py-10">
-        <h1 className="font-reading text-2xl font-semibold">ค้นหาเนื้อหา</h1>
+      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-5 sm:py-10">
+        <h1 className="font-reading text-xl font-semibold sm:text-2xl">ค้นหาเนื้อหา</h1>
 
-        <form action="/search" className="mt-6 flex flex-wrap gap-2">
+        {/* จอแคบ: ช่องพิมพ์เต็มบรรทัด แล้วตัวเลือกกับปุ่มค้นหาแชร์บรรทัดถัดไป */}
+        <form action="/search" className="mt-5 flex flex-col gap-2 sm:mt-6 sm:flex-row">
           <input
             type="search"
             name="q"
@@ -56,34 +57,36 @@ export default function SearchPage({ searchParams }: Props) {
             placeholder="พิมพ์คำที่อยากหา…"
             autoFocus
             autoComplete="off"
-            className="min-w-0 flex-1 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm outline-none focus:border-accent"
+            className="min-w-0 rounded-lg border border-border bg-surface px-4 py-3 text-base outline-none focus:border-accent sm:flex-1 sm:py-2.5 sm:text-sm"
           />
 
-          {novels.length > 1 ? (
-            <select
-              name="novel"
-              defaultValue={scope?.slug ?? ""}
-              aria-label="ขอบเขตการค้นหา"
-              className="rounded-lg border border-border bg-surface px-3 py-2.5 text-sm outline-none focus:border-accent"
-            >
-              <option value="">ทุกเรื่อง</option>
-              {novels.map((novel) => (
-                <option key={novel.slug} value={novel.slug}>
-                  {novel.title}
-                </option>
-              ))}
-            </select>
-          ) : (
-            /* เรื่องเดียวไม่ต้องมีตัวเลือก แต่ยังคงขอบเขตไว้ตอนกดค้นซ้ำ */
-            scope && <input type="hidden" name="novel" value={scope.slug} />
-          )}
+          <div className="flex gap-2">
+            {novels.length > 1 ? (
+              <select
+                name="novel"
+                defaultValue={scope?.slug ?? ""}
+                aria-label="ขอบเขตการค้นหา"
+                className="min-w-0 flex-1 rounded-lg border border-border bg-surface px-3 py-3 text-sm outline-none focus:border-accent sm:flex-none sm:py-2.5"
+              >
+                <option value="">ทุกเรื่อง</option>
+                {novels.map((novel) => (
+                  <option key={novel.slug} value={novel.slug}>
+                    {novel.title}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              /* เรื่องเดียวไม่ต้องมีตัวเลือก แต่ยังคงขอบเขตไว้ตอนกดค้นซ้ำ */
+              scope && <input type="hidden" name="novel" value={scope.slug} />
+            )}
 
-          <button
-            type="submit"
-            className="rounded-lg border border-accent bg-accent-soft px-5 py-2.5 text-sm text-accent transition-colors hover:border-accent"
-          >
-            ค้นหา
-          </button>
+            <button
+              type="submit"
+              className="flex-1 rounded-lg border border-accent bg-accent-soft px-5 py-3 text-sm text-accent transition-colors hover:border-accent sm:flex-none sm:py-2.5"
+            >
+              ค้นหา
+            </button>
+          </div>
         </form>
 
         {scope && novels.length > 1 ? (
@@ -189,6 +192,8 @@ function ChapterResult({
   query: string;
 }) {
   const rest = chapter.total - chapter.snippets.length;
+  // ชื่อตอนที่เป็น "ตอนที่ N" อยู่แล้วไม่ต้องมีป้ายเลขตอนกำกับซ้ำ
+  const numbered = chapter.title.replace(/\s+/g, "") === `ตอนที่${chapter.number}`;
 
   return (
     <article className="rounded-xl border border-border bg-surface p-4">
@@ -199,9 +204,11 @@ function ChapterResult({
         >
           {chapter.titleMatch ? <Highlight text={chapter.title} query={query} /> : chapter.title}
         </Link>
-        <span className="shrink-0 text-xs tabular-nums text-muted">
-          ตอนที่ {chapter.number}
-        </span>
+        {numbered ? null : (
+          <span className="shrink-0 text-xs tabular-nums text-muted">
+            ตอนที่ {chapter.number}
+          </span>
+        )}
       </h3>
 
       {chapter.snippets.length > 0 ? (

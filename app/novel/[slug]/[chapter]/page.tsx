@@ -49,12 +49,12 @@ export default function ChapterPage({ params }: Props) {
         }
       />
 
-      <main className="mx-auto max-w-2xl px-5 pb-16 pt-8">
+      <main className="mx-auto max-w-2xl px-5 pb-16 pt-6 sm:pt-8">
         <article>
-          <h1 className="font-reading text-xl font-semibold leading-snug">
+          <h1 className="font-reading text-lg font-semibold leading-snug sm:text-xl">
             {chapter.title}
           </h1>
-          <p className="mt-1.5 text-xs text-muted">{novel.title}</p>
+          <p className="mt-1.5 line-clamp-1 text-xs text-muted">{novel.title}</p>
 
           <ChapterReader
             novelSlug={novel.slug}
@@ -63,7 +63,8 @@ export default function ChapterPage({ params }: Props) {
           />
         </article>
 
-        <nav className="mt-14 flex items-stretch gap-3 border-t border-border pt-6">
+        {/* จอแคบวางปุ่มซ้อนกัน — สองปุ่มเรียงกันเหลือช่องละไม่ถึงครึ่งจอ ชื่อตอนโดนตัดหมด */}
+        <nav className="mt-12 flex flex-col items-stretch gap-3 border-t border-border pt-6 sm:mt-14 sm:flex-row">
           <ChapterLink
             slug={novel.slug}
             chapter={prev}

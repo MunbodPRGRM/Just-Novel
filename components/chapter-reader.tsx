@@ -243,7 +243,8 @@ export function ChapterReader({ novelSlug, chapterNumber, blocks }: Props) {
         />
       ) : null}
 
-      {resumeBlock !== null ? (
+      {/* บนมือถือแถบนี้อยู่ที่เดียวกับกล่องลอย — หลบให้ตอนกำลังเลือกข้อความ/เขียนโน้ต */}
+      {resumeBlock !== null && !draft && !editing ? (
         <ResumeBar
           onResume={() => {
             scrollToBlock(resumeBlock);
@@ -266,8 +267,8 @@ function SelectionToolbar({
   return (
     <div
       data-reader-ui
-      style={popoverStyle(anchor)}
-      className="z-40 flex items-center gap-1 rounded-full border border-border bg-surface px-2 py-1.5 shadow-lg"
+      style={anchorVars(anchor)}
+      className="floating-panel flex items-center justify-center gap-1.5 rounded-full border border-border bg-surface px-3 py-2 shadow-lg sm:gap-1 sm:px-2 sm:py-1.5"
     >
       {HIGHLIGHT_COLORS.map((color) => (
         <button
@@ -275,7 +276,7 @@ function SelectionToolbar({
           type="button"
           onClick={() => onPick(color, false)}
           aria-label={`ไฮไลต์สี ${color}`}
-          className="h-6 w-6 rounded-full border border-border transition-transform hover:scale-110"
+          className="h-8 w-8 rounded-full border border-border transition-transform hover:scale-110 sm:h-6 sm:w-6"
           style={{ backgroundColor: `var(--hl-${color})` }}
         />
       ))}
@@ -283,7 +284,7 @@ function SelectionToolbar({
       <button
         type="button"
         onClick={() => onPick("yellow", true)}
-        className="rounded-full px-2 py-0.5 text-xs text-muted transition-colors hover:text-accent"
+        className="rounded-full px-3 py-1.5 text-xs text-muted transition-colors hover:text-accent sm:px-2 sm:py-0.5"
       >
         + โน้ต
       </button>
@@ -319,20 +320,21 @@ function NoteEditor({
     <div
       ref={ref}
       data-reader-ui
-      style={popoverStyle(anchor, 160)}
-      className="z-40 w-72 rounded-xl border border-border bg-surface p-3 shadow-lg"
+      style={anchorVars(anchor, 160)}
+      className="floating-panel floating-panel-wide rounded-xl border border-border bg-surface p-3 shadow-lg"
     >
       <p className="line-clamp-2 border-l-2 border-accent pl-2 text-xs italic text-muted">
         {note.text}
       </p>
 
+      {/* text-base บนมือถือ — ช่องพิมพ์ที่เล็กกว่า 16px ทำให้ iOS ซูมหน้าจอเองตอนโฟกัส */}
       <textarea
         autoFocus
         value={text}
         onChange={(event) => setText(event.target.value)}
         placeholder="โน้ตของฉัน…"
         rows={3}
-        className="mt-3 w-full resize-none rounded-lg border border-border bg-background p-2 text-sm outline-none focus:border-accent"
+        className="mt-3 w-full resize-none rounded-lg border border-border bg-background p-2 text-base outline-none focus:border-accent sm:text-sm"
       />
 
       <div className="mt-2 flex items-center gap-1">
@@ -342,7 +344,7 @@ function NoteEditor({
             type="button"
             onClick={() => updateNote(note.id, { color })}
             aria-label={`เปลี่ยนเป็นสี ${color}`}
-            className={`h-5 w-5 rounded-full border transition-transform hover:scale-110 ${
+            className={`h-7 w-7 rounded-full border transition-transform hover:scale-110 sm:h-5 sm:w-5 ${
               note.color === color ? "border-accent" : "border-border"
             }`}
             style={{ backgroundColor: `var(--hl-${color})` }}
@@ -355,9 +357,17 @@ function NoteEditor({
             removeNote(note.id);
             onClose();
           }}
-          className="ml-auto rounded-lg px-2 py-1 text-xs text-muted transition-colors hover:text-accent"
+          className="ml-auto rounded-lg px-3 py-1.5 text-xs text-muted transition-colors hover:text-accent"
         >
           ลบ
+        </button>
+
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted transition-colors hover:border-accent hover:text-accent sm:hidden"
+        >
+          เสร็จ
         </button>
       </div>
     </div>
@@ -374,13 +384,15 @@ function ResumeBar({
   return (
     <div
       data-reader-ui
-      className="fixed inset-x-0 bottom-4 z-30 mx-auto flex w-[min(28rem,calc(100%-2.5rem))] items-center gap-2 rounded-full border border-border bg-surface p-1.5 pl-4 shadow-lg"
+      className="bottom-safe fixed inset-x-0 z-30 mx-auto flex w-[min(28rem,calc(100%-1.5rem))] items-center gap-2 rounded-full border border-border bg-surface p-1.5 pl-4 shadow-lg"
     >
-      <span className="flex-1 truncate text-xs text-muted">อ่านตอนนี้ค้างไว้</span>
+      <span className="hidden flex-1 truncate text-xs text-muted xs:block">
+        อ่านตอนนี้ค้างไว้
+      </span>
       <button
         type="button"
         onClick={onResume}
-        className="rounded-full bg-accent-soft px-3 py-1.5 text-xs text-accent"
+        className="flex-1 rounded-full bg-accent-soft px-3 py-2 text-xs text-accent xs:flex-none"
       >
         อ่านต่อจากที่ค้าง
       </button>
@@ -388,7 +400,7 @@ function ResumeBar({
         type="button"
         onClick={onDismiss}
         aria-label="ปิด"
-        className="h-7 w-7 rounded-full text-muted transition-colors hover:text-accent"
+        className="h-8 w-8 shrink-0 rounded-full text-muted transition-colors hover:text-accent"
       >
         ✕
       </button>
@@ -396,15 +408,18 @@ function ResumeBar({
   );
 }
 
-/** วางกล่องลอยไว้เหนือข้อความที่เลือก ถ้าที่ด้านบนไม่พอค่อยย้ายไปด้านล่าง */
-function popoverStyle(anchor: Anchor, height = 56): React.CSSProperties {
+/**
+ * ตำแหน่งของกล่องลอยบนจอกว้าง — วางเหนือข้อความที่เลือก ถ้าที่ด้านบนไม่พอค่อยย้ายลงล่าง
+ * ส่งออกเป็นตัวแปร CSS เพราะบนมือถือ .floating-panel ไม่สนค่าพวกนี้ (ยึดล่างจอแทน)
+ */
+function anchorVars(anchor: Anchor, height = 56): React.CSSProperties {
   const above = anchor.top > height + 80;
+
   return {
-    position: "fixed",
-    top: above ? anchor.top - 10 : anchor.bottom + 10,
-    left: Math.min(Math.max(anchor.left, 150), window.innerWidth - 150),
-    transform: above ? "translate(-50%, -100%)" : "translate(-50%, 0)",
-  };
+    "--anchor-top": `${above ? anchor.top - 10 : anchor.bottom + 10}px`,
+    "--anchor-left": `${Math.min(Math.max(anchor.left, 150), window.innerWidth - 150)}px`,
+    "--anchor-shift": above ? "-100%" : "0",
+  } as React.CSSProperties;
 }
 
 function toAnchor(rect: DOMRect): Anchor {

@@ -49,8 +49,12 @@
   line-height: var(--reading-leading);
 }
 
+/*
+  "ไม่มีหัว" ต้องใช้ฟอนต์ไทยที่ไร้หัวจริงๆ (Noto Sans Thai)
+  — ถ้าชี้ไปที่ฟอนต์ UI (Sarabun) จะได้แค่ตัวหนาขึ้น เพราะ Sarabun เองก็เป็นฟอนต์มีหัว
+*/
 [data-reading-font="sans"] .reading-body {
-  font-family: var(--font-ui), system-ui, sans-serif;
+  font-family: var(--font-loopless), "Noto Sans Thai", system-ui, sans-serif;
 }
 
 .reading-body p {
@@ -116,6 +120,45 @@
 /* มีโน้ตพิมพ์ไว้ = ขีดเส้นใต้ให้ต่างจากไฮไลต์เปล่าๆ */
 .reading-body mark[data-note="true"] {
   box-shadow: inset 0 -0.12em 0 var(--accent);
+}
+
+/*
+  กล่องลอยในหน้าอ่าน (แถบเลือกสีไฮไลต์ / กล่องเขียนโน้ต)
+
+  มือถือ: ยึดขอบล่างจอเต็มความกว้าง — นิ้วอยู่ล่างจออยู่แล้ว และไม่ต้องลุ้นว่า
+  กล่องจะตกขอบเวลาเลือกข้อความริมจอ (แถบเลือกข้อความของ OS มักบังพอดีด้วย)
+  จอกว้าง: ลอยติดข้อความที่เลือก ตามตำแหน่งที่ส่งมาทาง --anchor-*
+*/
+.floating-panel {
+  position: fixed;
+  z-index: 40;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+@media (min-width: 640px) {
+  .floating-panel {
+    right: auto;
+    bottom: auto;
+    top: var(--anchor-top);
+    left: var(--anchor-left);
+    width: max-content;
+    transform: translate(-50%, var(--anchor-shift));
+  }
+
+  .floating-panel-wide {
+    width: 18rem;
+  }
+}
+
+/* แถบล่างจอที่ต้องหลบ home indicator ของ iPhone */
+.bottom-safe {
+  bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
 /* กระพริบสั้นๆ เวลากระโดดมาจากแผงโน้ต ให้ตาจับได้ว่าอยู่ตรงไหน */

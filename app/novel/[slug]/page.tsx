@@ -40,8 +40,8 @@ export default function NovelPage({ params }: Props) {
         actions={<NotesButton novelSlug={novel.slug} chapters={chapterLinks} />}
       />
 
-      <main className="mx-auto max-w-3xl px-5 py-10">
-        <header className="flex gap-5">
+      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-5 sm:py-10">
+        <header className="flex gap-4 sm:gap-5">
           {novel.cover ? (
             <Image
               src={novel.cover}
@@ -49,38 +49,42 @@ export default function NovelPage({ params }: Props) {
               width={128}
               height={183}
               priority
-              className="h-[183px] w-32 shrink-0 rounded-lg object-cover"
+              sizes="(min-width: 640px) 128px, 96px"
+              className="h-[137px] w-24 shrink-0 rounded-lg object-cover sm:h-[183px] sm:w-32"
             />
           ) : null}
 
           <div className="min-w-0 flex-1">
-            <h1 className="font-reading text-2xl font-semibold leading-snug">
+            <h1 className="font-reading text-lg font-semibold leading-snug sm:text-2xl">
               {novel.title}
             </h1>
             {novel.subtitle ? (
-              <p className="mt-2 text-sm italic text-muted">{novel.subtitle}</p>
+              <p className="mt-2 text-xs italic leading-relaxed text-muted sm:text-sm">
+                {novel.subtitle}
+              </p>
             ) : null}
 
-            <p className="mt-4 text-xs text-muted">
+            <p className="mt-3 text-xs leading-relaxed text-muted sm:mt-4">
               {[STATUS_LABEL[novel.status], `${novel.chapters.length} ตอน`, ...credits].join(
                 " · ",
               )}
             </p>
-
-            {novel.tags.length > 0 ? (
-              <ul className="mt-5 flex flex-wrap gap-2">
-                {novel.tags.map((tag) => (
-                  <li
-                    key={tag}
-                    className="rounded-full bg-accent-soft px-2.5 py-1 text-xs text-accent"
-                  >
-                    {tag}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
           </div>
         </header>
+
+        {/* แท็กอยู่ใต้ header ทั้งบล็อก — จอแคบมีที่ข้างปกไม่พอให้แท็กขึ้นบรรทัดสวยๆ */}
+        {novel.tags.length > 0 ? (
+          <ul className="mt-4 flex flex-wrap gap-2">
+            {novel.tags.map((tag) => (
+              <li
+                key={tag}
+                className="rounded-full bg-accent-soft px-2.5 py-1 text-xs text-accent"
+              >
+                {tag}
+              </li>
+            ))}
+          </ul>
+        ) : null}
 
         {novel.synopsis ? (
           <p className="mt-5 border-l-2 border-border pl-4 text-sm leading-relaxed text-muted">
@@ -92,10 +96,10 @@ export default function NovelPage({ params }: Props) {
           novels={[{ slug: novel.slug, title: novel.title, chapters: chapterLinks }]}
         />
 
-        <h2 className="mt-10 text-sm font-semibold text-muted">สารบัญ</h2>
+        <h2 className="mt-8 text-sm font-semibold text-muted sm:mt-10">สารบัญ</h2>
 
         {novel.chapters.length === 0 ? (
-          <p className="mt-4 rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted">
+          <p className="mt-4 rounded-lg border border-dashed border-border p-6 text-center text-sm leading-relaxed text-muted sm:p-8">
             ยังไม่มีไฟล์ตอนในโฟลเดอร์ <code>content/{novel.slug}/</code>
           </p>
         ) : (

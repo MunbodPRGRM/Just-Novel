@@ -9,6 +9,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      screens: {
+        /* ต่ำกว่านี้ (iPhone SE รุ่นเก่า ~320px) ต้องยอมตัดของบางชิ้นทิ้ง */
+        xs: "360px",
+      },
       colors: {
         background: "var(--background)",
         surface: "var(--surface)",
@@ -21,6 +25,8 @@ const config: Config = {
       fontFamily: {
         ui: ["var(--font-ui)", "system-ui", "sans-serif"],
         reading: ["var(--font-reading)", "Georgia", "serif"],
+        /* ฟอนต์ไทยไม่มีหัว — ใช้โชว์ตัวอย่างในแผงตั้งค่า */
+        loopless: ["var(--font-loopless)", "Noto Sans Thai", "system-ui", "sans-serif"],
       },
     },
   },

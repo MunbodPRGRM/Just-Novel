@@ -71,4 +71,23 @@ export function applyPrefs(prefs: Prefs) {
   root.style.setProperty("--reading-size", `${prefs.fontSize}px`);
   root.style.setProperty("--reading-leading", String(prefs.lineHeight));
   root.dataset.readingFont = prefs.font;
+  syncThemeColor();
+}
+
+/**
+ * ให้แถบ URL ของเบราว์เซอร์มือถือเป็นสีเดียวกับพื้นหลังเว็บ
+ * อ่านค่าจาก --background ที่เพิ่งถูกสลับ จะได้ไม่ต้องเขียนโค้ดสีซ้ำอีกที่
+ */
+export function syncThemeColor() {
+  const root = document.documentElement;
+  const color = getComputedStyle(root).getPropertyValue("--background").trim();
+  if (!color) return;
+
+  let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.name = "theme-color";
+    document.head.appendChild(meta);
+  }
+  meta.content = color;
 }

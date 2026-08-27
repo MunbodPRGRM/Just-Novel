@@ -53,7 +53,7 @@ export function NotesButton({ novelSlug, chapters, currentChapter }: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-lg border border-border px-2.5 py-1 text-xs text-muted transition-colors hover:border-accent hover:text-accent"
+        className="h-9 shrink-0 rounded-lg border border-border px-2.5 text-xs text-muted transition-colors hover:border-accent hover:text-accent"
       >
         โน้ต{novelNotes.length > 0 ? ` ${novelNotes.length}` : ""}
       </button>
@@ -76,13 +76,14 @@ export function NotesButton({ novelSlug, chapters, currentChapter }: Props) {
                     type="button"
                     onClick={close}
                     aria-label="ปิด"
-                    className="h-8 w-8 rounded-lg text-muted transition-colors hover:text-accent"
+                    className="-mr-2 h-10 w-10 rounded-lg text-muted transition-colors hover:text-accent"
                   >
                     ✕
                   </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-4 py-4">
+                {/* overscroll-contain กันไม่ให้เลื่อนสุดแล้วไปลากหน้าที่อยู่ข้างหลังต่อบนมือถือ */}
+                <div className="pb-safe flex-1 overflow-y-auto overscroll-contain px-4 pt-4">
                   {groups.length === 0 ? (
                     <p className="rounded-lg border border-dashed border-border p-6 text-center text-xs leading-relaxed text-muted">
                       ยังไม่มีโน้ตในเรื่องนี้
@@ -124,7 +125,7 @@ export function NotesButton({ novelSlug, chapters, currentChapter }: Props) {
                               <button
                                 type="button"
                                 onClick={() => removeNote(note.id)}
-                                className="mt-2 text-xs text-muted transition-colors hover:text-accent"
+                                className="mt-1 py-1.5 text-xs text-muted transition-colors hover:text-accent"
                               >
                                 ลบ
                               </button>

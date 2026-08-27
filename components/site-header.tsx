@@ -22,23 +22,26 @@ export function SiteHeader({ back, aside, actions, searchNovel, hideSearch }: Pr
 
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-background/85 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-3xl items-center justify-between gap-4 px-5">
+      <div className="mx-auto flex h-14 max-w-3xl items-center justify-between gap-2 px-4 sm:gap-4 sm:px-5">
         {back ? (
           <Link
             href={back.href}
-            className="-ml-2 truncate rounded px-2 py-1 text-sm text-muted transition-colors hover:text-accent"
+            className="-ml-2 min-w-0 flex-1 truncate rounded px-2 py-2 text-sm text-muted transition-colors hover:text-accent"
           >
             ← {back.label}
           </Link>
         ) : (
-          <Link href="/" className="-ml-2 rounded px-2 py-1 font-reading font-semibold">
+          <Link
+            href="/"
+            className="-ml-2 min-w-0 flex-1 truncate rounded px-2 py-2 font-reading font-semibold"
+          >
             Just Novel
           </Link>
         )}
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           {aside ? (
-            <span className="text-xs tabular-nums text-muted">{aside}</span>
+            <span className="hidden text-xs tabular-nums text-muted xs:inline">{aside}</span>
           ) : null}
           {actions}
           {hideSearch ? null : (
@@ -46,7 +49,7 @@ export function SiteHeader({ back, aside, actions, searchNovel, hideSearch }: Pr
               href={searchHref}
               aria-label="ค้นหาเนื้อหา"
               title="ค้นหาเนื้อหา"
-              className="rounded-lg border border-border px-2.5 py-1.5 text-muted transition-colors hover:border-accent hover:text-accent"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-accent hover:text-accent"
             >
               <svg
                 viewBox="0 0 20 20"

@@ -27,9 +27,9 @@ export function ChapterList({
           <li key={chapter.number}>
             <Link
               href={`/novel/${novelSlug}/${chapter.number}`}
-              className="flex items-baseline gap-4 px-5 py-4 transition-colors hover:bg-accent-soft"
+              className="flex items-baseline gap-3 px-4 py-4 transition-colors hover:bg-accent-soft sm:gap-4 sm:px-5"
             >
-              <span className="w-8 shrink-0 text-sm tabular-nums text-muted">
+              <span className="w-6 shrink-0 text-sm tabular-nums text-muted sm:w-8">
                 {chapter.number}
               </span>
 
