@@ -17,7 +17,6 @@ const config: Config = {
         border: "var(--border)",
         accent: "var(--accent)",
         "accent-soft": "var(--accent-soft)",
-        highlight: "var(--highlight)",
       },
       fontFamily: {
         ui: ["var(--font-ui)", "system-ui", "sans-serif"],

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Maitree, Sarabun } from "next/font/google";
+import { PrefsBootScript } from "@/components/prefs-boot-script";
+import { PrefsEffect } from "@/components/prefs-effect";
 import "./globals.css";
 
 /** ฟอนต์เนื้อเรื่อง — serif ไทยที่ออกแบบมาสำหรับอ่านยาวๆ */
@@ -34,8 +36,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="th" className={`${reading.variable} ${ui.variable}`}>
+    // สคริปต์ตั้งค่าธีมแก้ class/style ของ <html> ก่อน hydrate เป็นเรื่องปกติ
+    <html
+      lang="th"
+      className={`${reading.variable} ${ui.variable}`}
+      data-reading-font="serif"
+      suppressHydrationWarning
+    >
       <body className="min-h-dvh bg-background font-ui text-foreground antialiased">
+        <PrefsBootScript />
+        <PrefsEffect />
         {children}
       </body>
     </html>

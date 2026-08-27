@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChapterBody } from "@/components/chapter-body";
+import { ChapterReader } from "@/components/chapter-reader";
+import { NotesButton } from "@/components/notes-panel";
 import { SiteHeader } from "@/components/site-header";
 import { getChapter, getChapterNeighbours, getNovel, getNovelSlugs } from "@/lib/content";
 
@@ -38,6 +39,13 @@ export default function ChapterPage({ params }: Props) {
       <SiteHeader
         back={{ href: `/novel/${novel.slug}`, label: "สารบัญ" }}
         aside={`${position} / ${novel.chapters.length}`}
+        actions={
+          <NotesButton
+            novelSlug={novel.slug}
+            chapters={novel.chapters.map(({ number, title }) => ({ number, title }))}
+            currentChapter={chapter.number}
+          />
+        }
       />
 
       <main className="mx-auto max-w-2xl px-5 pb-16 pt-8">
@@ -47,7 +55,11 @@ export default function ChapterPage({ params }: Props) {
           </h1>
           <p className="mt-1.5 text-xs text-muted">{novel.title}</p>
 
-          <ChapterBody blocks={chapter.blocks} />
+          <ChapterReader
+            novelSlug={novel.slug}
+            chapterNumber={chapter.number}
+            blocks={chapter.blocks}
+          />
         </article>
 
         <nav className="mt-14 flex items-stretch gap-3 border-t border-border pt-6">

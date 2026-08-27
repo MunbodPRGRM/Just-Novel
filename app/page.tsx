@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ResumeReading } from "@/components/resume-reading";
 import { SiteHeader } from "@/components/site-header";
 import { getAllNovels } from "@/lib/content";
 import { STATUS_LABEL } from "@/lib/labels";
@@ -13,6 +14,15 @@ export default function HomePage() {
       <main className="mx-auto max-w-3xl px-5 py-10">
         <h1 className="font-reading text-2xl font-semibold">คลังนิยาย</h1>
 
+        <ResumeReading
+          showNovelTitle
+          novels={novels.map((novel) => ({
+            slug: novel.slug,
+            title: novel.title,
+            chapters: novel.chapters.map(({ number, title }) => ({ number, title })),
+          }))}
+        />
+
         {novels.length === 0 ? (
           <p className="mt-6 rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted">
             ยังไม่มีนิยายในโฟลเดอร์ <code>content/</code>
@@ -21,7 +31,7 @@ export default function HomePage() {
             <code>ตอนที่N.md</code>
           </p>
         ) : (
-          <ul className="mt-6 space-y-4">
+          <ul className="mt-8 space-y-4">
             {novels.map((novel) => (
               <li key={novel.slug}>
                 <Link

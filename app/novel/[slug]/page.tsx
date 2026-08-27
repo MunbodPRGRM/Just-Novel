@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ChapterList } from "@/components/chapter-list";
+import { NotesButton } from "@/components/notes-panel";
+import { ResumeReading } from "@/components/resume-reading";
 import { SiteHeader } from "@/components/site-header";
 import { getNovel, getNovelSlugs } from "@/lib/content";
-import { readingMinutes, STATUS_LABEL } from "@/lib/labels";
+import { STATUS_LABEL } from "@/lib/labels";
 
 type Props = { params: { slug: string } };
 
@@ -26,9 +28,14 @@ export default function NovelPage({ params }: Props) {
     novel.translator ? `แปล: ${novel.translator}` : null,
   ].filter(Boolean);
 
+  const chapterLinks = novel.chapters.map(({ number, title }) => ({ number, title }));
+
   return (
     <>
-      <SiteHeader back={{ href: "/", label: "คลังนิยาย" }} />
+      <SiteHeader
+        back={{ href: "/", label: "คลังนิยาย" }}
+        actions={<NotesButton novelSlug={novel.slug} chapters={chapterLinks} />}
+      />
 
       <main className="mx-auto max-w-3xl px-5 py-10">
         <header>
@@ -65,6 +72,10 @@ export default function NovelPage({ params }: Props) {
           ) : null}
         </header>
 
+        <ResumeReading
+          novels={[{ slug: novel.slug, title: novel.title, chapters: chapterLinks }]}
+        />
+
         <h2 className="mt-10 text-sm font-semibold text-muted">สารบัญ</h2>
 
         {novel.chapters.length === 0 ? (
@@ -72,24 +83,14 @@ export default function NovelPage({ params }: Props) {
             ยังไม่มีไฟล์ตอนในโฟลเดอร์ <code>content/{novel.slug}/</code>
           </p>
         ) : (
-          <ol className="mt-3 divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
-            {novel.chapters.map((chapter) => (
-              <li key={chapter.number}>
-                <Link
-                  href={`/novel/${novel.slug}/${chapter.number}`}
-                  className="flex items-baseline gap-4 px-5 py-4 transition-colors hover:bg-accent-soft"
-                >
-                  <span className="w-8 shrink-0 text-sm tabular-nums text-muted">
-                    {chapter.number}
-                  </span>
-                  <span className="font-reading flex-1 leading-snug">{chapter.title}</span>
-                  <span className="shrink-0 text-xs tabular-nums text-muted">
-                    {readingMinutes(chapter.charCount)} นาที
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ol>
+          <ChapterList
+            novelSlug={novel.slug}
+            chapters={novel.chapters.map(({ number, title, charCount }) => ({
+              number,
+              title,
+              charCount,
+            }))}
+          />
         )}
       </main>
     </>

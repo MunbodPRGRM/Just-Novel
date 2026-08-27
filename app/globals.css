@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 /*
-  โทนสีทั้งเว็บอยู่ในตัวแปรชุดเดียว — โหมดกลางคืนใน phase 3 แค่สลับค่าใน .dark
-  ไม่ต้องไล่แก้สีราย component
+  โทนสีทั้งเว็บอยู่ในตัวแปรชุดเดียว — โหมดกลางคืนแค่สลับค่าใน .dark
+  (คลาส .dark ถูกใส่ที่ <html> โดย lib/prefs.ts + สคริปต์ก่อนเรนเดอร์ใน layout)
 */
 :root {
   --background: #faf8f4;
@@ -14,7 +14,15 @@
   --border: #e5ded2;
   --accent: #8a5a2b;
   --accent-soft: #f2e6d6;
-  --highlight: #ffe9a8;
+
+  --hl-yellow: #ffe9a8;
+  --hl-green: #cfeac2;
+  --hl-blue: #cfe1f7;
+  --hl-pink: #f9d3e2;
+
+  /* ปรับได้จากแถบตั้งค่าการอ่าน — เขียนทับที่ <html> */
+  --reading-size: 19px;
+  --reading-leading: 2;
 }
 
 .dark {
@@ -25,22 +33,24 @@
   --border: #2e2a25;
   --accent: #d9a45b;
   --accent-soft: #33291d;
-  --highlight: #5c4a1c;
-}
 
-body {
-  /* ขนาดฟอนต์การอ่านปรับได้ใน phase 3 โดยเขียนทับตัวแปรนี้ */
-  --reading-size: 19px;
-  --reading-leading: 2;
+  --hl-yellow: #5c4a1c;
+  --hl-green: #2f4a2c;
+  --hl-blue: #26405c;
+  --hl-pink: #55293b;
 }
 
 /*
   เนื้อเรื่องในหน้าอ่าน — ผูกกับตัวแปรด้านบนทั้งหมด
-  phase 3 แค่เขียนทับ --reading-size/--reading-leading บน body ก็ปรับได้ทั้งหน้า
 */
 .reading-body {
+  font-family: var(--font-reading), Georgia, serif;
   font-size: var(--reading-size);
   line-height: var(--reading-leading);
+}
+
+[data-reading-font="sans"] .reading-body {
+  font-family: var(--font-ui), system-ui, sans-serif;
 }
 
 .reading-body p {
@@ -75,4 +85,56 @@ body {
   border-top: 1px solid var(--border);
   width: 40%;
   margin-inline: auto;
+}
+
+/* เผื่อที่ให้แถบบน (sticky) ตอนกระโดดไปย่อหน้าที่ค้างไว้หรือที่ผูกโน้ตไว้ */
+.reading-body [data-block] {
+  scroll-margin-top: 6rem;
+}
+
+/* ไฮไลต์ — สีมาจากตัวแปร --hl-* จึงสลับตามโหมดกลางคืนเอง */
+.reading-body mark {
+  background-color: var(--hl-yellow);
+  color: inherit;
+  border-radius: 0.15em;
+  padding-block: 0.1em;
+  cursor: pointer;
+}
+
+.reading-body mark[data-color="green"] {
+  background-color: var(--hl-green);
+}
+
+.reading-body mark[data-color="blue"] {
+  background-color: var(--hl-blue);
+}
+
+.reading-body mark[data-color="pink"] {
+  background-color: var(--hl-pink);
+}
+
+/* มีโน้ตพิมพ์ไว้ = ขีดเส้นใต้ให้ต่างจากไฮไลต์เปล่าๆ */
+.reading-body mark[data-note="true"] {
+  box-shadow: inset 0 -0.12em 0 var(--accent);
+}
+
+/* กระพริบสั้นๆ เวลากระโดดมาจากแผงโน้ต ให้ตาจับได้ว่าอยู่ตรงไหน */
+@keyframes block-flash {
+  from {
+    background-color: var(--accent-soft);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+.block-flash {
+  animation: block-flash 1.6s ease-out;
+  border-radius: 0.35em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .block-flash {
+    animation: none;
+  }
 }
