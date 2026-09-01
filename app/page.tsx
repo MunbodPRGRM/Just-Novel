@@ -20,7 +20,7 @@ export default function HomePage() {
           novels={novels.map((novel) => ({
             slug: novel.slug,
             title: novel.title,
-            chapters: novel.chapters.map(({ number, title }) => ({ number, title })),
+            chapters: novel.chapters.map(({ id, title }) => ({ id, title })),
           }))}
         />
 

@@ -8,7 +8,7 @@ import { useLocalStore } from "@/lib/storage";
 type NovelInput = {
   slug: string;
   title: string;
-  chapters: { number: number; title: string }[];
+  chapters: { id: string; title: string }[];
 };
 
 type Props = {
@@ -32,7 +32,7 @@ export function ResumeReading({ novels, showNovelTitle = false }: Props) {
           if (!resume) return null;
 
           const at = novel.chapters.findIndex(
-            (chapter) => chapter.number === resume.chapter,
+            (chapter) => chapter.id === resume.chapter,
           );
           if (at === -1) return null;
 
@@ -64,7 +64,7 @@ export function ResumeReading({ novels, showNovelTitle = false }: Props) {
         {items.map((item) => (
           <li key={item.novel.slug}>
             <Link
-              href={`/novel/${item.novel.slug}/${item.chapter.number}${
+              href={`/novel/${item.novel.slug}/${item.chapter.id}${
                 item.block > 0 ? `#block-${item.block}` : ""
               }`}
               className="block rounded-xl border border-accent/40 bg-accent-soft/50 p-4 transition-colors hover:border-accent"

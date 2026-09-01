@@ -10,9 +10,9 @@ import { useDismiss } from "@/lib/use-dismiss";
 type Props = {
   novelSlug: string;
   /** ชื่อตอนไว้จัดกลุ่มในแผง — ส่งมาจากหน้า server */
-  chapters: { number: number; title: string }[];
+  chapters: { id: string; title: string }[];
   /** ตอนที่กำลังเปิดอยู่ (ถ้าอยู่ในหน้าอ่าน) — ไว้แยกกลุ่มบนสุด */
-  currentChapter?: number;
+  currentChapter?: string;
 };
 
 /** ปุ่มบนแถบบนที่บอกจำนวนโน้ต + แผงรายการโน้ตทั้งเรื่อง */
@@ -30,8 +30,10 @@ export function NotesButton({ novelSlug, chapters, currentChapter }: Props) {
   );
 
   const groups = useMemo(() => {
-    const titles = new Map(chapters.map((chapter) => [chapter.number, chapter.title]));
-    const byChapter = new Map<number, Note[]>();
+    const titles = new Map(chapters.map((chapter) => [chapter.id, chapter.title]));
+    // เรียงกลุ่มตามลำดับสารบัญที่ server ส่งมา ตอนพิเศษจึงอยู่ถูกที่เหมือนกัน
+    const rank = new Map(chapters.map((chapter, at) => [chapter.id, at]));
+    const byChapter = new Map<string, Note[]>();
 
     for (const note of novelNotes) {
       const list = byChapter.get(note.chapter);
@@ -40,10 +42,14 @@ export function NotesButton({ novelSlug, chapters, currentChapter }: Props) {
     }
 
     return [...byChapter.entries()]
-      .sort((a, b) => a[0] - b[0])
-      .map(([number, items]) => ({
-        number,
-        title: titles.get(number) ?? `ตอนที่ ${number}`,
+      .sort(
+        (a, b) =>
+          (rank.get(a[0]) ?? Number.MAX_SAFE_INTEGER) -
+          (rank.get(b[0]) ?? Number.MAX_SAFE_INTEGER),
+      )
+      .map(([id, items]) => ({
+        id,
+        title: titles.get(id) ?? `ตอนที่ ${id}`,
         items,
       }));
   }, [novelNotes, chapters]);
@@ -92,10 +98,10 @@ export function NotesButton({ novelSlug, chapters, currentChapter }: Props) {
                     </p>
                   ) : (
                     groups.map((group) => (
-                      <section key={group.number} className="mb-6 last:mb-0">
+                      <section key={group.id} className="mb-6 last:mb-0">
                         <h3 className="mb-2 text-xs font-medium text-muted">
                           {group.title}
-                          {group.number === currentChapter ? " · ตอนนี้" : ""}
+                          {group.id === currentChapter ? " · ตอนนี้" : ""}
                         </h3>
 
                         <ul className="space-y-2">

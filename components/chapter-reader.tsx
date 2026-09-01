@@ -28,7 +28,7 @@ type Draft = { block: number; start: number; end: number; text: string; anchor: 
 
 type Props = {
   novelSlug: string;
-  chapterNumber: number;
+  chapterId: string;
   blocks: Block[];
 };
 
@@ -36,7 +36,7 @@ type Props = {
  * ส่วนที่ต้องรู้จักเบราว์เซอร์ของหน้าอ่าน — จำตำแหน่งอ่าน, ไฮไลต์, โน้ต
  * เนื้อหาเองมาจาก server component แล้วส่งลงมาเป็น props (ไม่ได้ fetch เพิ่ม)
  */
-export function ChapterReader({ novelSlug, chapterNumber, blocks }: Props) {
+export function ChapterReader({ novelSlug, chapterId, blocks }: Props) {
   const articleRef = useRef<HTMLDivElement>(null);
   const notes = useLocalStore(notesStore);
   const [percent, setPercent] = useState(0);
@@ -46,8 +46,8 @@ export function ChapterReader({ novelSlug, chapterNumber, blocks }: Props) {
 
   const chapterNotes = useMemo(
     () =>
-      notes.filter((note) => note.novel === novelSlug && note.chapter === chapterNumber),
-    [notes, novelSlug, chapterNumber],
+      notes.filter((note) => note.novel === novelSlug && note.chapter === chapterId),
+    [notes, novelSlug, chapterId],
   );
 
   const scrollToBlock = useCallback((block: number) => {
@@ -72,7 +72,7 @@ export function ChapterReader({ novelSlug, chapterNumber, blocks }: Props) {
 
     const flush = () => {
       window.clearTimeout(timer);
-      if (scrolled) saveProgress(novelSlug, chapterNumber, latest);
+      if (scrolled) saveProgress(novelSlug, chapterId, latest);
     };
 
     const measure = () => {
@@ -114,15 +114,15 @@ export function ChapterReader({ novelSlug, chapterNumber, blocks }: Props) {
       window.removeEventListener("pagehide", flush);
       flush();
     };
-  }, [novelSlug, chapterNumber]);
+  }, [novelSlug, chapterId]);
 
   // เปิดตอนที่ค้างไว้ค้างกลางเรื่อง → เสนอให้กระโดดไปต่อ (ไม่เลื่อนให้เอง)
   useEffect(() => {
     if (window.location.hash || window.scrollY > 40) return;
-    const saved = getChapterProgress(progressStore.read(), novelSlug, chapterNumber);
+    const saved = getChapterProgress(progressStore.read(), novelSlug, chapterId);
     if (!saved || saved.block <= 0 || saved.percent >= DONE_PERCENT) return;
     setResumeBlock(saved.block);
-  }, [novelSlug, chapterNumber]);
+  }, [novelSlug, chapterId]);
 
   // มาจากลิงก์ #block-N (แผงโน้ต) → กระพริบให้เห็นว่าอยู่ตรงไหน
   useEffect(() => {
@@ -189,7 +189,7 @@ export function ChapterReader({ novelSlug, chapterNumber, blocks }: Props) {
     if (!draft) return;
     const note = addNote({
       novel: novelSlug,
-      chapter: chapterNumber,
+      chapter: chapterId,
       block: draft.block,
       start: draft.start,
       end: draft.end,
