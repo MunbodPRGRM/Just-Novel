@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { cache } from "react";
 import matter from "gray-matter";
+import { chapterIdFromFile, chapterOrder, compareChapterOrder } from "./chapter-id";
 
 /** โฟลเดอร์เก็บนิยายทั้งหมด: content/<novel-slug>/{novel.json, ตอนที่N.md} */
 export const CONTENT_DIR = path.join(process.cwd(), "content");
@@ -22,8 +23,13 @@ export type NovelMeta = {
 };
 
 export type ChapterSummary = {
-  /** เลขตอนที่ดึงจากชื่อไฟล์ ใช้เป็น URL segment ด้วย */
-  number: number;
+  /**
+   * เลขตอนจากชื่อไฟล์ในรูปสตริง — ใช้เป็น URL segment และคีย์เก็บ progress/notes
+   * ตอนปกติได้ "51" ตอนพิเศษที่คั่นกลางได้ "51.5-1" (จากไฟล์ `ตอนที่51.5-1.md`)
+   */
+  id: string;
+  /** ตอนพิเศษที่คั่นระหว่างตอนหลัก — id มีมากกว่าหนึ่งระดับ เช่น "51.5-1" */
+  isExtra: boolean;
   title: string;
   file: string;
   charCount: number;
@@ -43,14 +49,14 @@ export type Block = {
 
 export type Chapter = ChapterSummary & {
   novelSlug: string;
+  /** คีย์เรียงลำดับที่แตก id ออกเป็นตัวเลขทีละระดับ — "51.5-1" → [51, 5, 1] */
+  order: number[];
   blocks: Block[];
 };
 
 export type Novel = NovelMeta & {
   chapters: ChapterSummary[];
 };
-
-const NUMBER_IN_NAME = /(\d+)/;
 
 function isNovelDir(slug: string) {
   return fs.existsSync(path.join(CONTENT_DIR, slug, "novel.json"));
@@ -118,13 +124,16 @@ function readChapterFile(novelSlug: string, file: string): Chapter {
   const parsed = matter(fs.readFileSync(filePath, "utf8"));
   const { title, blocks } = parseChapterBody(parsed.content);
 
-  const number = Number(file.match(NUMBER_IN_NAME)?.[1] ?? 0);
+  const id = chapterIdFromFile(file);
+  const order = chapterOrder(id);
   const frontmatterTitle = (parsed.data as { title?: string }).title;
 
   return {
     novelSlug,
-    number,
-    title: frontmatterTitle?.trim() || title || `ตอนที่ ${number}`,
+    id,
+    isExtra: order.length > 1,
+    order,
+    title: frontmatterTitle?.trim() || title || `ตอนที่ ${id}`,
     file,
     charCount: blocks.reduce((sum, block) => sum + block.text.length, 0),
     blocks,
@@ -133,6 +142,7 @@ function readChapterFile(novelSlug: string, file: string): Chapter {
 
 /**
  * อ่านทุกตอนของนิยายเรื่องหนึ่ง (พร้อมเนื้อหาเต็ม) เรียงตามเลขตอนจากน้อยไปมาก
+ * ตอนพิเศษ (เช่น `ตอนที่51.5-1.md`) แทรกอยู่ระหว่างตอนหลักตามลำดับเอง
  * หน้าอ่านใช้ `getChapter` ทีละตอนพอ — ตัวนี้มีไว้ให้ lib/search.ts กวาดทั้งเรื่อง
  */
 export const getChapters = cache((novelSlug: string): Chapter[] => {
@@ -143,12 +153,12 @@ export const getChapters = cache((novelSlug: string): Chapter[] => {
     .readdirSync(dir)
     .filter((file) => file.endsWith(".md"))
     .map((file) => readChapterFile(novelSlug, file))
-    .sort((a, b) => a.number - b.number);
+    .sort((a, b) => compareChapterOrder(a.order, b.order));
 });
 
 function toSummary(chapter: Chapter): ChapterSummary {
-  const { number, title, file, charCount } = chapter;
-  return { number, title, file, charCount };
+  const { id, isExtra, title, file, charCount } = chapter;
+  return { id, isExtra, title, file, charCount };
 }
 
 export const getNovelSlugs = cache((): string[] => {
@@ -171,14 +181,14 @@ export const getAllNovels = cache((): Novel[] =>
     .filter((novel): novel is Novel => novel !== null),
 );
 
-export const getChapter = cache((slug: string, number: number): Chapter | null => {
-  return getChapters(slug).find((chapter) => chapter.number === number) ?? null;
+export const getChapter = cache((slug: string, id: string): Chapter | null => {
+  return getChapters(slug).find((chapter) => chapter.id === id) ?? null;
 });
 
 /** ตอนก่อนหน้า/ถัดไป สำหรับปุ่มนำทางในหน้าอ่าน */
-export const getChapterNeighbours = cache((slug: string, number: number) => {
+export const getChapterNeighbours = cache((slug: string, id: string) => {
   const chapters = getChapters(slug);
-  const at = chapters.findIndex((chapter) => chapter.number === number);
+  const at = chapters.findIndex((chapter) => chapter.id === id);
   if (at === -1) return { prev: null, next: null };
   return {
     prev: at > 0 ? toSummary(chapters[at - 1]) : null,

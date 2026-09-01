@@ -172,7 +172,7 @@ function NovelResults({
       {novel.chapters.length === 0 ? null : (
         <ul className="mt-3 space-y-3">
           {novel.chapters.map((chapter) => (
-            <li key={chapter.number}>
+            <li key={chapter.id}>
               <ChapterResult slug={novel.slug} chapter={chapter} query={query} />
             </li>
           ))}
@@ -193,20 +193,20 @@ function ChapterResult({
 }) {
   const rest = chapter.total - chapter.snippets.length;
   // ชื่อตอนที่เป็น "ตอนที่ N" อยู่แล้วไม่ต้องมีป้ายเลขตอนกำกับซ้ำ
-  const numbered = chapter.title.replace(/\s+/g, "") === `ตอนที่${chapter.number}`;
+  const numbered = chapter.title.replace(/\s+/g, "") === `ตอนที่${chapter.id}`;
 
   return (
     <article className="rounded-xl border border-border bg-surface p-4">
       <h3 className="flex items-baseline justify-between gap-3">
         <Link
-          href={`/novel/${slug}/${chapter.number}`}
+          href={`/novel/${slug}/${chapter.id}`}
           className="font-reading text-sm leading-snug hover:text-accent"
         >
           {chapter.titleMatch ? <Highlight text={chapter.title} query={query} /> : chapter.title}
         </Link>
         {numbered ? null : (
           <span className="shrink-0 text-xs tabular-nums text-muted">
-            ตอนที่ {chapter.number}
+            ตอนที่ {chapter.id}
           </span>
         )}
       </h3>
@@ -216,7 +216,7 @@ function ChapterResult({
           {chapter.snippets.map((snippet) => (
             <li key={snippet.key}>
               <Link
-                href={`/novel/${slug}/${chapter.number}#block-${snippet.block}`}
+                href={`/novel/${slug}/${chapter.id}#block-${snippet.block}`}
                 className="block rounded-lg border-l-2 border-border py-1 pl-3 text-sm leading-relaxed text-muted transition-colors hover:border-accent hover:text-foreground"
               >
                 {snippet.before}

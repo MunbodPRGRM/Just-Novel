@@ -1,5 +1,6 @@
 "use client";
 
+import { compareChapterId, toChapterId } from "./chapter-id";
 import { clampNumber, createLocalStore } from "./storage";
 import { NOTES_KEY } from "./storage-keys";
 
@@ -16,7 +17,8 @@ export type HighlightColor = (typeof HIGHLIGHT_COLORS)[number];
 export type Note = {
   id: string;
   novel: string;
-  chapter: number;
+  /** id ตอนจาก lib/content.ts ("51" หรือ "51.5-1") */
+  chapter: string;
   block: number;
   /** ช่วงตัวอักษรในย่อหน้า (นับจากข้อความล้วน ไม่รวมมาร์กอัป) */
   start: number;
@@ -43,7 +45,7 @@ function parseNote(raw: unknown): Note | null {
   return {
     id: data.id,
     novel: data.novel,
-    chapter: Math.round(clampNumber(data.chapter, 0, 100000, 0)),
+    chapter: toChapterId(data.chapter),
     block: Math.round(clampNumber(data.block, 0, 100000, 0)),
     start,
     end,
@@ -65,7 +67,7 @@ function parseNotes(raw: unknown): Note[] {
 }
 
 function byPosition(a: Note, b: Note) {
-  if (a.chapter !== b.chapter) return a.chapter - b.chapter;
+  if (a.chapter !== b.chapter) return compareChapterId(a.chapter, b.chapter);
   if (a.block !== b.block) return a.block - b.block;
   return a.start - b.start;
 }

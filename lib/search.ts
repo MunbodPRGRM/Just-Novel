@@ -28,7 +28,7 @@ export type Snippet = {
 };
 
 export type ChapterHit = {
-  number: number;
+  id: string;
   title: string;
   /** คำค้นอยู่ในชื่อตอน (ไม่ใช่แค่ในเนื้อหา) */
   titleMatch: boolean;
@@ -147,7 +147,7 @@ export function searchContent(rawQuery: string, novelSlug?: string): SearchResul
       total += chapterTotal;
       novelTotal += chapterTotal;
       chapters.push({
-        number: chapter.number,
+        id: chapter.id,
         title: chapter.title,
         titleMatch,
         snippets,

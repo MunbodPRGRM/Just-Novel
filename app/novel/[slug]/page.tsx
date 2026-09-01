@@ -30,7 +30,7 @@ export default function NovelPage({ params }: Props) {
     novel.translator ? `แปล: ${novel.translator}` : null,
   ].filter(Boolean);
 
-  const chapterLinks = novel.chapters.map(({ number, title }) => ({ number, title }));
+  const chapterLinks = novel.chapters.map(({ id, title }) => ({ id, title }));
 
   return (
     <>
@@ -106,8 +106,9 @@ export default function NovelPage({ params }: Props) {
           <>
             <ChapterList
               novelSlug={novel.slug}
-              chapters={novel.chapters.map(({ number, title, charCount }) => ({
-                number,
+              chapters={novel.chapters.map(({ id, isExtra, title, charCount }) => ({
+                id,
+                isExtra,
                 title,
                 charCount,
               }))}

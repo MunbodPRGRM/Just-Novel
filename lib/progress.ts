@@ -1,5 +1,6 @@
 "use client";
 
+import { toChapterId } from "./chapter-id";
 import { clampNumber, createLocalStore } from "./storage";
 import { PROGRESS_KEY } from "./storage-keys";
 
@@ -19,7 +20,8 @@ export type ChapterProgress = {
 };
 
 export type NovelProgress = {
-  lastChapter: number;
+  /** id ตอนล่าสุดที่เปิดอ่าน ("51" หรือ "51.5-1") */
+  lastChapter: string;
   chapters: Record<string, ChapterProgress>;
 };
 
@@ -57,7 +59,7 @@ function parseProgress(raw: unknown): ProgressMap {
     }
 
     map[slug] = {
-      lastChapter: Math.round(clampNumber(novel.lastChapter, 0, 100000, 0)),
+      lastChapter: toChapterId(novel.lastChapter),
       chapters,
     };
   }
@@ -73,7 +75,7 @@ export const progressStore = createLocalStore<ProgressMap>(
 
 export function saveProgress(
   novelSlug: string,
-  chapter: number,
+  chapter: string,
   entry: { block: number; percent: number },
 ) {
   progressStore.set((prev) => {
@@ -103,7 +105,7 @@ export function clearNovelProgress(novelSlug: string) {
 export function getChapterProgress(
   map: ProgressMap,
   novelSlug: string,
-  chapter: number,
+  chapter: string,
 ): ChapterProgress | null {
   return map[novelSlug]?.chapters[chapter] ?? null;
 }
@@ -114,7 +116,7 @@ export function hasNovelProgress(map: ProgressMap, novelSlug: string): boolean {
   return novel !== undefined && Object.keys(novel.chapters).length > 0;
 }
 
-export type Resume = ChapterProgress & { chapter: number };
+export type Resume = ChapterProgress & { chapter: string };
 
 /** ตอนที่ค้างไว้ล่าสุดของเรื่องหนึ่ง — null ถ้ายังไม่เคยเปิดอ่าน */
 export function getResume(map: ProgressMap, novelSlug: string): Resume | null {

@@ -13,26 +13,27 @@ export function generateStaticParams() {
     const novel = getNovel(slug);
     return (novel?.chapters ?? []).map((chapter) => ({
       slug,
-      chapter: String(chapter.number),
+      chapter: chapter.id,
     }));
   });
 }
 
 export function generateMetadata({ params }: Props): Metadata {
   const novel = getNovel(params.slug);
-  const chapter = getChapter(params.slug, Number(params.chapter));
+  const chapter = getChapter(params.slug, decodeURIComponent(params.chapter));
   if (!novel || !chapter) return { title: "ไม่พบตอนนี้" };
   return { title: `${chapter.title} · ${novel.title}` };
 }
 
 export default function ChapterPage({ params }: Props) {
-  const number = Number(params.chapter);
+  // ตอนพิเศษมี id แบบ "51.5-1" จึงรับเป็นสตริงตรงๆ ไม่แปลงเป็นตัวเลข
+  const id = decodeURIComponent(params.chapter);
   const novel = getNovel(params.slug);
-  const chapter = Number.isInteger(number) ? getChapter(params.slug, number) : null;
+  const chapter = getChapter(params.slug, id);
   if (!novel || !chapter) notFound();
 
-  const { prev, next } = getChapterNeighbours(params.slug, number);
-  const position = novel.chapters.findIndex((item) => item.number === number) + 1;
+  const { prev, next } = getChapterNeighbours(params.slug, id);
+  const position = novel.chapters.findIndex((item) => item.id === id) + 1;
 
   return (
     <>
@@ -43,8 +44,8 @@ export default function ChapterPage({ params }: Props) {
         actions={
           <NotesButton
             novelSlug={novel.slug}
-            chapters={novel.chapters.map(({ number, title }) => ({ number, title }))}
-            currentChapter={chapter.number}
+            chapters={novel.chapters.map(({ id, title }) => ({ id, title }))}
+            currentChapter={chapter.id}
           />
         }
       />
@@ -58,7 +59,7 @@ export default function ChapterPage({ params }: Props) {
 
           <ChapterReader
             novelSlug={novel.slug}
-            chapterNumber={chapter.number}
+            chapterId={chapter.id}
             blocks={chapter.blocks}
           />
         </article>
@@ -90,7 +91,7 @@ function ChapterLink({
   className,
 }: {
   slug: string;
-  chapter: { number: number; title: string } | null;
+  chapter: { id: string; title: string } | null;
   direction: "prev" | "next";
   className?: string;
 }) {
@@ -109,7 +110,7 @@ function ChapterLink({
 
   return (
     <Link
-      href={`/novel/${slug}/${chapter.number}`}
+      href={`/novel/${slug}/${chapter.id}`}
       className={`${className} ${align} rounded-lg border border-border bg-surface px-4 py-3 transition-colors hover:border-accent`}
     >
       <span className="block text-xs text-muted">
