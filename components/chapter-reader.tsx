@@ -13,8 +13,8 @@ import {
   type Note,
 } from "@/lib/notes";
 import {
-  DONE_PERCENT,
   getChapterProgress,
+  markChapterDone,
   progressStore,
   saveProgress,
 } from "@/lib/progress";
@@ -35,6 +35,7 @@ type Props = {
  */
 export function ChapterReader({ novelSlug, chapterId, blocks }: Props) {
   const articleRef = useRef<HTMLDivElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
   const notes = useLocalStore(notesStore);
   const [percent, setPercent] = useState(0);
   const { draft, selecting, preview, clearDraft } = useSelectionDraft(articleRef);
@@ -113,11 +114,29 @@ export function ChapterReader({ novelSlug, chapterId, blocks }: Props) {
     };
   }, [novelSlug, chapterId]);
 
+  // ── อ่านจบตอนแล้วหรือยัง ─────────────────────────────────────────────
+  // ดูจาก "เห็นท้ายเนื้อหาหรือยัง" ตรงๆ ไม่ใช่ % ของหน้า — ปุ่มนำทางท้ายหน้ากินที่
+  // จนบางตอนเลื่อนสุดแล้วยังไม่ถึงเกณฑ์ %, บนมือถือแถบ URL ยุบ/ขยายก็ทำค่าเพี้ยนอีก
+  // ตอนสั้นที่ไม่ต้องเลื่อนเลยก็ติ๊กให้ตั้งแต่เปิด (ตัวจับ % เดิมไม่เคยเซฟให้ ถ้าไม่มี scroll)
+  useEffect(() => {
+    const end = endRef.current;
+    if (!end) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      markChapterDone(novelSlug, chapterId);
+      observer.disconnect();
+    });
+
+    observer.observe(end);
+    return () => observer.disconnect();
+  }, [novelSlug, chapterId]);
+
   // เปิดตอนที่ค้างไว้ค้างกลางเรื่อง → เสนอให้กระโดดไปต่อ (ไม่เลื่อนให้เอง)
   useEffect(() => {
     if (window.location.hash || window.scrollY > 40) return;
     const saved = getChapterProgress(progressStore.read(), novelSlug, chapterId);
-    if (!saved || saved.block <= 0 || saved.percent >= DONE_PERCENT) return;
+    if (!saved || saved.block <= 0 || saved.done) return;
     setResumeBlock(saved.block);
   }, [novelSlug, chapterId]);
 
@@ -179,6 +198,9 @@ export function ChapterReader({ novelSlug, chapterId, blocks }: Props) {
       <div ref={articleRef} onClick={onArticleClick}>
         <ChapterBody blocks={blocks} notes={chapterNotes} preview={preview} />
       </div>
+
+      {/* เส้นสิ้นสุดเนื้อหา — โผล่พ้นขอบล่างจอเมื่อไหร่ถือว่าอ่านจบตอน */}
+      <div ref={endRef} aria-hidden="true" className="h-px" />
 
       {/* ระหว่างที่นิ้วยังลากอยู่ซ่อนไว้ก่อน — ให้เห็นข้อความที่กำลังคลุมเต็มๆ */}
       {draft && !selecting ? (

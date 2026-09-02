@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ChapterNav } from "@/components/chapter-nav";
 import { ChapterReader } from "@/components/chapter-reader";
 import { NotesButton } from "@/components/notes-panel";
 import { SiteHeader } from "@/components/site-header";
@@ -64,59 +64,13 @@ export default function ChapterPage({ params }: Props) {
           />
         </article>
 
-        {/* จอแคบวางปุ่มซ้อนกัน — สองปุ่มเรียงกันเหลือช่องละไม่ถึงครึ่งจอ ชื่อตอนโดนตัดหมด */}
-        <nav className="mt-12 flex flex-col items-stretch gap-3 border-t border-border pt-6 sm:mt-14 sm:flex-row">
-          <ChapterLink
-            slug={novel.slug}
-            chapter={prev}
-            direction="prev"
-            className="flex-1"
-          />
-          <ChapterLink
-            slug={novel.slug}
-            chapter={next}
-            direction="next"
-            className="flex-1"
-          />
-        </nav>
+        <ChapterNav
+          novelSlug={novel.slug}
+          currentId={chapter.id}
+          prev={prev}
+          next={next}
+        />
       </main>
     </>
-  );
-}
-
-function ChapterLink({
-  slug,
-  chapter,
-  direction,
-  className,
-}: {
-  slug: string;
-  chapter: { id: string; title: string } | null;
-  direction: "prev" | "next";
-  className?: string;
-}) {
-  const isPrev = direction === "prev";
-  const align = isPrev ? "text-left" : "text-right";
-
-  if (!chapter) {
-    return (
-      <span
-        className={`${className} ${align} rounded-lg border border-dashed border-border px-4 py-3 text-xs text-muted`}
-      >
-        {isPrev ? "ตอนแรกแล้ว" : "ตอนล่าสุดแล้ว"}
-      </span>
-    );
-  }
-
-  return (
-    <Link
-      href={`/novel/${slug}/${chapter.id}`}
-      className={`${className} ${align} rounded-lg border border-border bg-surface px-4 py-3 transition-colors hover:border-accent`}
-    >
-      <span className="block text-xs text-muted">
-        {isPrev ? "← ตอนก่อนหน้า" : "ตอนถัดไป →"}
-      </span>
-      <span className="font-reading mt-1 block truncate text-sm">{chapter.title}</span>
-    </Link>
   );
 }
