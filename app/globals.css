@@ -96,6 +96,30 @@
   scroll-margin-top: 6rem;
 }
 
+/*
+  จอสัมผัส: ปิด selection ของเบราว์เซอร์ทิ้งทั้งย่านเนื้อเรื่อง
+
+  บน Android การลาก "จุดจับ" ของ selection เป็น UI ของเบราว์เซอร์ที่ไม่ส่ง event
+  มาให้หน้าเว็บเลย (จับได้แค่คำเดียวที่กดค้างครั้งแรก) แถม long-press ยังเรียก
+  เมนู native กับแถบ Touch to Search ของ Chrome ขึ้นมาแข่งอีก
+  — ตัดทิ้งแล้วเลือกเองใน lib/use-selection.ts แทน
+
+  [data-native-selection] คือเบราว์เซอร์ที่ไม่มี caret API (แปลงพิกัดเป็นตำแหน่ง
+  ตัวอักษรไม่ได้) useSelectionDraft จะติดธงนี้ไว้ให้ถอยกลับไปใช้ของเบราว์เซอร์
+*/
+@media (pointer: coarse) {
+  .reading-body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  [data-native-selection] .reading-body {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
+
 /* ไฮไลต์ — สีมาจากตัวแปร --hl-* จึงสลับตามโหมดกลางคืนเอง */
 .reading-body mark {
   background-color: var(--hl-yellow);
@@ -115,6 +139,15 @@
 
 .reading-body mark[data-color="pink"] {
   background-color: var(--hl-pink);
+}
+
+/*
+  ช่วงที่กำลังลากเลือกอยู่ ยังไม่ได้บันทึก — กลับสีเหมือน selection ของระบบ
+  ให้ต่างจากไฮไลต์จริงทั้งสี่สีอย่างชัดเจน
+*/
+.reading-body mark[data-draft] {
+  background-color: var(--accent);
+  color: var(--background);
 }
 
 /* มีโน้ตพิมพ์ไว้ = ขีดเส้นใต้ให้ต่างจากไฮไลต์เปล่าๆ */

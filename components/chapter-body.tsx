@@ -2,7 +2,15 @@
 
 import { useMemo } from "react";
 import type { Block } from "@/lib/content";
-import { notesByBlock, splitBlockText, type Note } from "@/lib/notes";
+import {
+  DRAFT_NOTE_ID,
+  draftNote,
+  notesByBlock,
+  splitBlockText,
+  type Note,
+} from "@/lib/notes";
+
+type Preview = { block: number; start: number; end: number };
 
 /**
  * เนื้อเรื่องหนึ่งตอน
@@ -11,12 +19,26 @@ import { notesByBlock, splitBlockText, type Note } from "@/lib/notes";
  * กับ notes/highlights (อ่านค่าจาก DOM ได้โดยไม่ต้องส่ง state ลงมา)
  * `id="block-N"` ให้ลิงก์ #block-N จากแผงโน้ตกระโดดมาได้ตรงๆ
  *
+ * `preview` คือช่วงที่กำลังลากเลือกอยู่แต่ยังไม่บันทึก — วาดเองเพราะจอสัมผัสปิด
+ * selection ของเบราว์เซอร์ทิ้งไปแล้ว (ดู lib/use-selection.ts)
+ *
  * ตัวเนื้อหาเป็นข้อความล้วน (ไม่มี **ตัวหนา** / ลิงก์ ในไฟล์ .md ปัจจุบัน)
  * จึงเรนเดอร์เป็น text ตรงๆ แล้วหั่นเป็นช่วงตามไฮไลต์
  * ถ้าภายหลังมี inline markdown ค่อยเพิ่ม parser ตรงนี้
  */
-export function ChapterBody({ blocks, notes }: { blocks: Block[]; notes: Note[] }) {
-  const byBlock = useMemo(() => notesByBlock(notes), [notes]);
+export function ChapterBody({
+  blocks,
+  notes,
+  preview,
+}: {
+  blocks: Block[];
+  notes: Note[];
+  preview?: Preview | null;
+}) {
+  const byBlock = useMemo(
+    () => notesByBlock(preview ? [...notes, draftNote(preview)] : notes),
+    [notes, preview],
+  );
 
   return (
     <div className="reading-body mt-8">
@@ -55,7 +77,12 @@ function BlockText({ text, notes }: { text: string; notes?: Note[] }) {
   return (
     <>
       {splitBlockText(text, notes).map((segment) =>
-        segment.note ? (
+        segment.note?.id === DRAFT_NOTE_ID ? (
+          // ไม่มี data-note-id เพราะยังไม่ใช่โน้ตจริง — กันไม่ให้แตะแล้วเปิดกล่องแก้โน้ต
+          <mark key={segment.key} data-draft>
+            {segment.text}
+          </mark>
+        ) : segment.note ? (
           <mark
             key={segment.key}
             data-note-id={segment.note.id}
