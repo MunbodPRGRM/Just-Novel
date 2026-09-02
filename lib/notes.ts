@@ -106,6 +106,30 @@ export function notesByBlock(notes: Note[]): Map<number, Note[]> {
   return map;
 }
 
+export const DRAFT_NOTE_ID = "__draft__";
+
+/**
+ * ช่วงที่กำลังลากเลือกอยู่ ปลอมเป็นโน้ตหนึ่งอัน
+ *
+ * จอสัมผัสปิด selection ของเบราว์เซอร์ไปแล้ว (ดู lib/use-selection.ts) จึงไม่มีแถบสี
+ * ให้ดูว่าคลุมถึงไหน — ยัดช่วงนี้เข้า splitBlockText เพื่อวาดพรีวิวด้วยกลไกเดียวกับไฮไลต์จริง
+ * `createdAt` สูงสุดเพื่อให้ทับไฮไลต์เดิมที่ซ้อนกันอยู่เสมอ
+ */
+export function draftNote(range: { block: number; start: number; end: number }): Note {
+  return {
+    id: DRAFT_NOTE_ID,
+    novel: "",
+    chapter: "",
+    block: range.block,
+    start: range.start,
+    end: range.end,
+    text: "",
+    note: "",
+    color: "yellow",
+    createdAt: Number.MAX_SAFE_INTEGER,
+  };
+}
+
 export type Segment = { key: string; text: string; note: Note | null };
 
 /**

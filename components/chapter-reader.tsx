@@ -18,13 +18,10 @@ import {
   progressStore,
   saveProgress,
 } from "@/lib/progress";
+import { toAnchor, type Anchor } from "@/lib/selection";
 import { useLocalStore } from "@/lib/storage";
 import { useDismiss } from "@/lib/use-dismiss";
-
-type Anchor = { top: number; bottom: number; left: number };
-
-/** ข้อความที่เพิ่งลากเลือก ยังไม่ถูกบันทึก */
-type Draft = { block: number; start: number; end: number; text: string; anchor: Anchor };
+import { useSelectionDraft } from "@/lib/use-selection";
 
 type Props = {
   novelSlug: string;
@@ -40,7 +37,7 @@ export function ChapterReader({ novelSlug, chapterId, blocks }: Props) {
   const articleRef = useRef<HTMLDivElement>(null);
   const notes = useLocalStore(notesStore);
   const [percent, setPercent] = useState(0);
-  const [draft, setDraft] = useState<Draft | null>(null);
+  const { draft, selecting, preview, clearDraft } = useSelectionDraft(articleRef);
   const [editing, setEditing] = useState<{ id: string; anchor: Anchor } | null>(null);
   const [resumeBlock, setResumeBlock] = useState<number | null>(null);
 
@@ -138,53 +135,6 @@ export function ChapterReader({ novelSlug, chapterId, blocks }: Props) {
     return () => window.removeEventListener("hashchange", flashHash);
   }, []);
 
-  // ── ลากเลือกข้อความเพื่อไฮไลต์ ───────────────────────────────────────
-  useEffect(() => {
-    const onPointerUp = (event: PointerEvent) => {
-      const article = articleRef.current;
-      if (!article) return;
-      // ปล่อยคลิกในแถบเครื่องมือ/กล่องโน้ตไม่นับเป็นการเลือกใหม่
-      if ((event.target as HTMLElement).closest("[data-reader-ui]")) return;
-
-      // รอให้เบราว์เซอร์สรุป selection ให้เสร็จก่อน (โดยเฉพาะบนมือถือ)
-      window.setTimeout(() => {
-        const selection = window.getSelection();
-        if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
-          setDraft(null);
-          return;
-        }
-
-        const range = selection.getRangeAt(0);
-        const blockEl = closestBlock(range.commonAncestorContainer);
-        const text = range.toString().trim();
-
-        if (!blockEl || !article.contains(blockEl) || text.length === 0) {
-          setDraft(null);
-          return;
-        }
-
-        const start = offsetWithin(blockEl, range.startContainer, range.startOffset);
-        const end = offsetWithin(blockEl, range.endContainer, range.endOffset);
-        if (end <= start) {
-          setDraft(null);
-          return;
-        }
-
-        setEditing(null);
-        setDraft({
-          block: Number(blockEl.dataset.block),
-          start,
-          end,
-          text: blockEl.textContent?.slice(start, end) ?? text,
-          anchor: toAnchor(range.getBoundingClientRect()),
-        });
-      }, 10);
-    };
-
-    document.addEventListener("pointerup", onPointerUp);
-    return () => document.removeEventListener("pointerup", onPointerUp);
-  }, []);
-
   const createNote = (color: HighlightColor, withNote: boolean) => {
     if (!draft) return;
     const note = addNote({
@@ -198,8 +148,7 @@ export function ChapterReader({ novelSlug, chapterId, blocks }: Props) {
       color,
     });
 
-    window.getSelection()?.removeAllRanges();
-    setDraft(null);
+    clearDraft();
     if (withNote) setEditing({ id: note.id, anchor: draft.anchor });
   };
 
@@ -207,7 +156,7 @@ export function ChapterReader({ novelSlug, chapterId, blocks }: Props) {
   const onArticleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     const mark = (event.target as HTMLElement).closest<HTMLElement>("mark[data-note-id]");
     if (!mark) return;
-    setDraft(null);
+    clearDraft();
     setEditing({ id: mark.dataset.noteId!, anchor: toAnchor(mark.getBoundingClientRect()) });
   };
 
@@ -228,11 +177,16 @@ export function ChapterReader({ novelSlug, chapterId, blocks }: Props) {
       </div>
 
       <div ref={articleRef} onClick={onArticleClick}>
-        <ChapterBody blocks={blocks} notes={chapterNotes} />
+        <ChapterBody blocks={blocks} notes={chapterNotes} preview={preview} />
       </div>
 
-      {draft ? (
-        <SelectionToolbar anchor={draft.anchor} onPick={createNote} />
+      {/* ระหว่างที่นิ้วยังลากอยู่ซ่อนไว้ก่อน — ให้เห็นข้อความที่กำลังคลุมเต็มๆ */}
+      {draft && !selecting ? (
+        <SelectionToolbar
+          anchor={draft.anchor}
+          clamped={draft.clamped}
+          onPick={createNote}
+        />
       ) : null}
 
       {editingNote && editing ? (
@@ -260,35 +214,48 @@ export function ChapterReader({ novelSlug, chapterId, blocks }: Props) {
 
 function SelectionToolbar({
   anchor,
+  clamped,
   onPick,
 }: {
   anchor: Anchor;
+  clamped: boolean;
   onPick: (color: HighlightColor, withNote: boolean) => void;
 }) {
   return (
     <div
       data-reader-ui
-      style={anchorVars(anchor)}
-      className="floating-panel flex items-center justify-center gap-1.5 rounded-full border border-border bg-surface px-3 py-2 shadow-lg sm:gap-1 sm:px-2 sm:py-1.5"
+      style={anchorVars(anchor, clamped ? 84 : 56)}
+      className={`floating-panel border border-border bg-surface px-3 py-2 shadow-lg ${
+        clamped ? "rounded-2xl" : "rounded-full sm:px-2 sm:py-1.5"
+      }`}
     >
-      {HIGHLIGHT_COLORS.map((color) => (
+      {/* โน้ตหนึ่งอันผูกกับย่อหน้าเดียว (ดู Note ใน lib/notes.ts) — ลากเลยไปก็ตัดให้ */}
+      {clamped ? (
+        <p className="mb-2 text-center text-[11px] text-muted">
+          เลือกได้ทีละย่อหน้า — ไฮไลต์ถึงท้ายย่อหน้านี้
+        </p>
+      ) : null}
+
+      <div className="flex items-center justify-center gap-1.5 sm:gap-1">
+        {HIGHLIGHT_COLORS.map((color) => (
+          <button
+            key={color}
+            type="button"
+            onClick={() => onPick(color, false)}
+            aria-label={`ไฮไลต์สี ${color}`}
+            className="h-8 w-8 rounded-full border border-border transition-transform hover:scale-110 sm:h-6 sm:w-6"
+            style={{ backgroundColor: `var(--hl-${color})` }}
+          />
+        ))}
+        <span className="mx-1 h-5 w-px bg-border" />
         <button
-          key={color}
           type="button"
-          onClick={() => onPick(color, false)}
-          aria-label={`ไฮไลต์สี ${color}`}
-          className="h-8 w-8 rounded-full border border-border transition-transform hover:scale-110 sm:h-6 sm:w-6"
-          style={{ backgroundColor: `var(--hl-${color})` }}
-        />
-      ))}
-      <span className="mx-1 h-5 w-px bg-border" />
-      <button
-        type="button"
-        onClick={() => onPick("yellow", true)}
-        className="rounded-full px-3 py-1.5 text-xs text-muted transition-colors hover:text-accent sm:px-2 sm:py-0.5"
-      >
-        + โน้ต
-      </button>
+          onClick={() => onPick("yellow", true)}
+          className="rounded-full px-3 py-1.5 text-xs text-muted transition-colors hover:text-accent sm:px-2 sm:py-0.5"
+        >
+          + โน้ต
+        </button>
+      </div>
     </div>
   );
 }
@@ -421,23 +388,6 @@ function anchorVars(anchor: Anchor, height = 56): React.CSSProperties {
     "--anchor-left": `${Math.min(Math.max(anchor.left, 150), window.innerWidth - 150)}px`,
     "--anchor-shift": above ? "-100%" : "0",
   } as React.CSSProperties;
-}
-
-function toAnchor(rect: DOMRect): Anchor {
-  return { top: rect.top, bottom: rect.bottom, left: rect.left + rect.width / 2 };
-}
-
-function closestBlock(node: Node): HTMLElement | null {
-  const element = node instanceof HTMLElement ? node : node.parentElement;
-  return element?.closest<HTMLElement>("[data-block]") ?? null;
-}
-
-/** ระยะจากต้นย่อหน้าถึงจุดหนึ่ง นับเป็นตัวอักษรของข้อความล้วน */
-function offsetWithin(block: HTMLElement, node: Node, offset: number): number {
-  const range = document.createRange();
-  range.selectNodeContents(block);
-  range.setEnd(node, offset);
-  return range.toString().length;
 }
 
 function flash(element: HTMLElement) {
