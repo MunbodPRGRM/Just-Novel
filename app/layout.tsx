@@ -47,10 +47,16 @@ export const metadata: Metadata = {
  * `viewportFit: "cover"` ให้ env(safe-area-inset-*) มีค่าจริงบนมือถือจอบาก
  * — แถบลอยล่างจอ (เลือกข้อความ / อ่านต่อ) ถึงจะหลบแถบ home indicator ได้
  * สี theme-color ตั้งจริงตอนรัน (ดู lib/prefs.ts) เพราะธีมมาจาก localStorage ไม่ใช่ระบบเสมอ
+ *
+ * `minimumScale: 1` กันหนีบนิ้วซูมออกต่ำกว่า 100% — ค่า default ของเบราว์เซอร์คือ 0.25
+ * แต่ layout viewport ยังกว้างเท่า device-width อยู่ดี หน้าเลยแค่หดเป็นก้อนเล็กกลางจอ
+ * ไม่ได้ reflow ให้กว้างขึ้น (อยากได้ตัวอักษรเล็กลงใช้แถบตั้งค่าขนาดฟอนต์แทน)
+ * ไม่ได้ล็อกซูมเข้า — ไม่ใส่ maximumScale/userScalable ไว้
  */
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  minimumScale: 1,
   viewportFit: "cover",
 };
 
