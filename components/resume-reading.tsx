@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { DONE_PERCENT, getResume, progressStore } from "@/lib/progress";
+import { getResume, progressStore } from "@/lib/progress";
 import { useLocalStore } from "@/lib/storage";
 
 type NovelInput = {
@@ -37,7 +37,7 @@ export function ResumeReading({ novels, showNovelTitle = false }: Props) {
           if (at === -1) return null;
 
           // อ่านตอนนั้นจบแล้ว → ชวนอ่านตอนถัดไปแทน
-          const done = resume.percent >= DONE_PERCENT;
+          const done = resume.done;
           const target = done ? (novel.chapters[at + 1] ?? null) : novel.chapters[at];
           if (!target) return null;
 
