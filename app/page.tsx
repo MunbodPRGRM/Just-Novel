@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { NovelCover } from "@/components/novel-cover";
 import { ResumeReading } from "@/components/resume-reading";
 import { SiteHeader } from "@/components/site-header";
 import { getAllNovels } from "@/lib/content";
@@ -39,16 +39,14 @@ export default function HomePage() {
                   href={`/novel/${novel.slug}`}
                   className="flex gap-3 rounded-xl border border-border bg-surface p-4 transition-colors hover:border-accent sm:gap-4 sm:p-5"
                 >
-                  {novel.cover ? (
-                    <Image
-                      src={novel.cover}
-                      alt={novel.title}
-                      width={80}
-                      height={114}
-                      sizes="(min-width: 640px) 80px, 64px"
-                      className="h-[91px] w-16 shrink-0 rounded-lg object-cover sm:h-[114px] sm:w-20"
-                    />
-                  ) : null}
+                  <NovelCover
+                    covers={novel.covers}
+                    alt={novel.title}
+                    width={80}
+                    height={114}
+                    sizes="(min-width: 640px) 80px, 64px"
+                    className="h-[91px] w-16 shrink-0 rounded-lg object-cover sm:h-[114px] sm:w-20"
+                  />
 
                   <div className="min-w-0 flex-1">
                     {/* จอแคบวางป้ายสถานะไว้ใต้ชื่อ ไม่งั้นชื่อเรื่องเหลือที่นิดเดียว */}

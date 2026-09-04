@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ChapterList } from "@/components/chapter-list";
 import { NotesButton } from "@/components/notes-panel";
+import { NovelCover } from "@/components/novel-cover";
 import { ResetProgress } from "@/components/reset-progress";
 import { ResumeReading } from "@/components/resume-reading";
 import { SiteHeader } from "@/components/site-header";
@@ -42,17 +42,15 @@ export default function NovelPage({ params }: Props) {
 
       <main className="mx-auto max-w-3xl px-4 py-8 sm:px-5 sm:py-10">
         <header className="flex gap-4 sm:gap-5">
-          {novel.cover ? (
-            <Image
-              src={novel.cover}
-              alt={novel.title}
-              width={128}
-              height={183}
-              priority
-              sizes="(min-width: 640px) 128px, 96px"
-              className="h-[137px] w-24 shrink-0 rounded-lg object-cover sm:h-[183px] sm:w-32"
-            />
-          ) : null}
+          <NovelCover
+            covers={novel.covers}
+            alt={novel.title}
+            width={128}
+            height={183}
+            priority
+            sizes="(min-width: 640px) 128px, 96px"
+            className="h-[137px] w-24 shrink-0 rounded-lg object-cover sm:h-[183px] sm:w-32"
+          />
 
           <div className="min-w-0 flex-1">
             <h1 className="font-reading text-lg font-semibold leading-snug sm:text-2xl">
