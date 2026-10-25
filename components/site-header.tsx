@@ -21,7 +21,11 @@ export function SiteHeader({ back, aside, actions, searchNovel, hideSearch }: Pr
     : "/search";
 
   return (
-    <header className="sticky top-0 z-10 border-b border-border bg-background/85 backdrop-blur">
+    // data-chrome-bar: หน้าอ่านซ่อนแถบนี้ตอนเลื่อนอ่านได้ (lib/reader-chrome.ts) หน้าอื่นไม่มีผล
+    <header
+      data-chrome-bar="top"
+      className="sticky top-0 z-10 border-b border-border bg-background/85 backdrop-blur"
+    >
       <div className="mx-auto flex h-14 max-w-3xl items-center justify-between gap-2 px-4 sm:gap-4 sm:px-5">
         {back ? (
           <Link

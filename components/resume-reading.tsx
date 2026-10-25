@@ -13,15 +13,13 @@ type NovelInput = {
 
 type Props = {
   novels: NovelInput[];
-  /** แสดงชื่อเรื่องกำกับด้วยไหม — หน้ารายชื่อควรแสดง หน้าของเรื่องนั้นไม่ต้อง */
-  showNovelTitle?: boolean;
 };
 
 /**
- * การ์ด "อ่านต่อ" — จุดเข้าหลักของเว็บนี้
+ * การ์ด "อ่านต่อ" ในหน้าของแต่ละเรื่อง (หน้าแรกไม่มีแล้ว — ผู้ใช้สั่งเอาออก)
  * อ่านจาก localStorage จึงว่างเปล่าตอน server render แล้วค่อยโผล่มาหลัง hydrate
  */
-export function ResumeReading({ novels, showNovelTitle = false }: Props) {
+export function ResumeReading({ novels }: Props) {
   const progress = useLocalStore(progressStore);
 
   const items = useMemo(
@@ -69,11 +67,7 @@ export function ResumeReading({ novels, showNovelTitle = false }: Props) {
               }`}
               className="block rounded-xl border border-accent/40 bg-accent-soft/50 p-4 transition-colors hover:border-accent"
             >
-              {showNovelTitle ? (
-                <p className="truncate text-xs text-muted">{item.novel.title}</p>
-              ) : null}
-
-              <p className="font-reading mt-0.5 leading-snug">{item.chapter.title}</p>
+              <p className="font-reading leading-snug">{item.chapter.title}</p>
 
               <div className="mt-3 flex items-center gap-3">
                 <div className="h-1 flex-1 overflow-hidden rounded-full bg-border">

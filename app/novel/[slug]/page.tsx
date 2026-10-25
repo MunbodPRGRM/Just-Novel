@@ -43,13 +43,11 @@ export default function NovelPage({ params }: Props) {
       <main className="mx-auto max-w-3xl px-4 py-8 sm:px-5 sm:py-10">
         <header className="flex gap-4 sm:gap-5">
           <NovelCover
-            covers={novel.covers}
-            alt={novel.title}
-            width={128}
-            height={183}
+            src={novel.cover}
+            title={novel.title}
             priority
             sizes="(min-width: 640px) 128px, 96px"
-            className="h-[137px] w-24 shrink-0 rounded-lg object-cover sm:h-[183px] sm:w-32"
+            className="h-[137px] w-24 sm:h-[183px] sm:w-32"
           />
 
           <div className="min-w-0 flex-1">
@@ -85,7 +83,7 @@ export default function NovelPage({ params }: Props) {
         ) : null}
 
         {novel.synopsis ? (
-          <p className="mt-5 border-l-2 border-border pl-4 text-sm leading-relaxed text-muted">
+          <p className="mt-5 whitespace-pre-line border-l-2 border-border pl-4 text-sm leading-relaxed text-muted">
             {novel.synopsis}
           </p>
         ) : null}

@@ -18,12 +18,7 @@ export type NovelMeta = {
   synopsis?: string;
   status: NovelStatus;
   tags: string[];
-  /**
-   * ปกทั้งหมดของเรื่อง เป็น path ไป static asset ใน public/
-   * เช่น ["/covers/seireishi_novel1.jpg", ...] — หน้าเว็บสุ่มมาแสดงทีละใบ
-   */
-  covers: string[];
-  /** ปกใบแรกในลิสต์ — ใช้ตรงที่ต้องการรูปเดียวคงที่ (เช่น ผลค้นหา) */
+  /** ปกของเรื่อง เป็น path ไป static asset ใน public/ เช่น "/covers/seireishi/seireishi_novel5.jpg" */
   cover?: string;
 };
 
@@ -67,23 +62,9 @@ function isNovelDir(slug: string) {
   return fs.existsSync(path.join(CONTENT_DIR, slug, "novel.json"));
 }
 
-/**
- * รวมปกจาก novel.json ให้เป็นลิสต์เดียว — รับได้ทั้ง `covers: []` (หลายใบ)
- * และ `cover: "..."` แบบเดิม (เรื่องที่มีปกใบเดียวไม่ต้องแก้ไฟล์)
- */
-function normaliseCovers(data: Partial<NovelMeta>): string[] {
-  const list = Array.isArray(data.covers) ? data.covers : [];
-  const single = typeof data.cover === "string" ? data.cover : "";
-
-  return [single, ...list]
-    .map((cover) => (typeof cover === "string" ? cover.trim() : ""))
-    .filter((cover, at, all) => cover !== "" && all.indexOf(cover) === at);
-}
-
 function readNovelMeta(slug: string): NovelMeta {
   const raw = fs.readFileSync(path.join(CONTENT_DIR, slug, "novel.json"), "utf8");
   const data = JSON.parse(raw) as Partial<NovelMeta>;
-  const covers = normaliseCovers(data);
 
   return {
     slug,
@@ -94,8 +75,7 @@ function readNovelMeta(slug: string): NovelMeta {
     synopsis: data.synopsis?.trim() || undefined,
     status: data.status ?? "ongoing",
     tags: data.tags ?? [],
-    covers,
-    cover: covers[0],
+    cover: typeof data.cover === "string" ? data.cover.trim() || undefined : undefined,
   };
 }
 

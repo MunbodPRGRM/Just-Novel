@@ -18,10 +18,14 @@ import {
   progressStore,
   saveProgress,
 } from "@/lib/progress";
+import { setChromeHidden, toggleChrome } from "@/lib/reader-chrome";
 import { toAnchor, type Anchor } from "@/lib/selection";
 import { useLocalStore } from "@/lib/storage";
 import { useDismiss } from "@/lib/use-dismiss";
-import { useSelectionDraft } from "@/lib/use-selection";
+import { LONG_PRESS_MS, useSelectionDraft } from "@/lib/use-selection";
+
+/** นิ้ว/เมาส์ขยับเกินนี้ระหว่างกด = ลากหรือเลื่อน ไม่ใช่แตะ */
+const TAP_MOVE_TOLERANCE = 10;
 
 type Props = {
   novelSlug: string;
@@ -41,6 +45,10 @@ export function ChapterReader({ novelSlug, chapterId, blocks }: Props) {
   const { draft, selecting, preview, clearDraft } = useSelectionDraft(articleRef);
   const [editing, setEditing] = useState<{ id: string; anchor: Anchor } | null>(null);
   const [resumeBlock, setResumeBlock] = useState<number | null>(null);
+  /** จุดที่เริ่มกด — ไว้แยกว่า click ที่ตามมาเป็น "แตะ" จริงหรือเปล่า */
+  const pressRef = useRef<{ time: number; x: number; y: number; busy: boolean } | null>(
+    null,
+  );
 
   const chapterNotes = useMemo(
     () =>
@@ -171,12 +179,42 @@ export function ChapterReader({ novelSlug, chapterId, blocks }: Props) {
     if (withNote) setEditing({ id: note.id, anchor: draft.anchor });
   };
 
-  // คลิกไฮไลต์เดิม → เปิดกล่องแก้โน้ต/เปลี่ยนสี/ลบ
+  // เลือกข้อความ/เปิดกล่องโน้ตอยู่ → เก็บแถบบน-ล่างไว้ก่อน ไม่ให้บังแถบเครื่องมือ
+  useEffect(() => {
+    if (draft || editing) setChromeHidden(true);
+  }, [draft, editing]);
+
+  const onArticlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    pressRef.current = {
+      time: event.timeStamp,
+      x: event.clientX,
+      y: event.clientY,
+      // ถ้ามีข้อความที่เลือกค้าง/กล่องโน้ตเปิดอยู่ การแตะครั้งนี้มีไว้ปิดสิ่งนั้น ไม่ใช่สลับแถบ
+      busy: draft !== null || editing !== null,
+    };
+  };
+
   const onArticleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    const mark = (event.target as HTMLElement).closest<HTMLElement>("mark[data-note-id]");
-    if (!mark) return;
-    clearDraft();
-    setEditing({ id: mark.dataset.noteId!, anchor: toAnchor(mark.getBoundingClientRect()) });
+    const target = event.target as HTMLElement;
+    const press = pressRef.current;
+    pressRef.current = null;
+
+    // คลิกไฮไลต์เดิม → เปิดกล่องแก้โน้ต/เปลี่ยนสี/ลบ
+    const mark = target.closest<HTMLElement>("mark[data-note-id]");
+    if (mark) {
+      clearDraft();
+      setEditing({ id: mark.dataset.noteId!, anchor: toAnchor(mark.getBoundingClientRect()) });
+      return;
+    }
+
+    // แตะเนื้อหาเปล่าๆ → สลับแถบบน-ล่าง
+    // ไม่นับ: กดค้าง (เข้าโหมดเลือกข้อความ), ลาก, ลากเลือกด้วยเมาส์, กดปุ่ม/ลิงก์
+    if (!press || press.busy) return;
+    if (event.timeStamp - press.time >= LONG_PRESS_MS) return;
+    if (Math.hypot(event.clientX - press.x, event.clientY - press.y) > TAP_MOVE_TOLERANCE) return;
+    if (window.getSelection()?.isCollapsed === false) return;
+    if (target.closest("a, button, [data-reader-ui]")) return;
+    toggleChrome();
   };
 
   const editingNote = editing
@@ -185,7 +223,9 @@ export function ChapterReader({ novelSlug, chapterId, blocks }: Props) {
 
   return (
     <>
+      {/* data-chrome-progress: แถบบนซ่อนเมื่อไหร่ เส้นนี้เลื่อนขึ้นไปติดขอบจอแทน (globals.css) */}
       <div
+        data-chrome-progress
         className="fixed inset-x-0 top-14 z-20 h-[3px] bg-transparent"
         aria-hidden="true"
       >
@@ -195,7 +235,7 @@ export function ChapterReader({ novelSlug, chapterId, blocks }: Props) {
         />
       </div>
 
-      <div ref={articleRef} onClick={onArticleClick}>
+      <div ref={articleRef} onPointerDown={onArticlePointerDown} onClick={onArticleClick}>
         <ChapterBody blocks={blocks} notes={chapterNotes} preview={preview} />
       </div>
 
@@ -374,7 +414,7 @@ function ResumeBar({
   return (
     <div
       data-reader-ui
-      className="bottom-safe fixed inset-x-0 z-30 mx-auto flex w-[min(28rem,calc(100%-1.5rem))] items-center gap-2 rounded-full border border-border bg-surface p-1.5 pl-4 shadow-lg"
+      className="reader-float-bottom fixed inset-x-0 z-30 mx-auto flex w-[min(28rem,calc(100%-1.5rem))] items-center gap-2 rounded-full border border-border bg-surface p-1.5 pl-4 shadow-lg"
     >
       <span className="hidden flex-1 truncate text-xs text-muted xs:block">
         อ่านตอนนี้ค้างไว้

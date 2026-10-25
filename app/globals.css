@@ -205,6 +205,56 @@ body {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
+/*
+  แถบบน/ล่างของหน้าอ่าน — lib/reader-chrome.ts ตั้ง <html data-chrome="hidden"> ตอนเลื่อนลงอ่าน
+  visibility หน่วงไว้จนเลื่อนออกเสร็จ: ซ่อนแล้วกด Tab/โปรแกรมอ่านจอจะไม่ไปโดนปุ่มในแถบ
+*/
+[data-chrome-bar],
+[data-chrome-progress] {
+  transition:
+    transform 200ms ease,
+    visibility 0s linear 0s;
+}
+
+html[data-chrome="hidden"] [data-chrome-bar] {
+  visibility: hidden;
+  transition:
+    transform 200ms ease,
+    visibility 0s linear 200ms;
+}
+
+html[data-chrome="hidden"] [data-chrome-bar="top"] {
+  transform: translateY(-100%);
+}
+
+html[data-chrome="hidden"] [data-chrome-bar="bottom"] {
+  transform: translateY(100%);
+}
+
+/* เส้นความคืบหน้าอยู่ใต้แถบบน (top-14) — แถบบนหายก็ขยับขึ้นไปติดขอบจอ */
+html[data-chrome="hidden"] [data-chrome-progress] {
+  transform: translateY(-3.5rem);
+}
+
+/* กล่องลอยล่างจอ (เช่น "อ่านต่อจากที่ค้าง") — ยืนเหนือแถบล่าง (h-14) แถบหายก็ลงมาชิดขอบ */
+.reader-float-bottom {
+  bottom: calc(4.25rem + env(safe-area-inset-bottom));
+  transition: bottom 200ms ease;
+}
+
+html[data-chrome="hidden"] .reader-float-bottom {
+  bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-chrome-bar],
+  [data-chrome-progress],
+  html[data-chrome="hidden"] [data-chrome-bar],
+  .reader-float-bottom {
+    transition: none;
+  }
+}
+
 /* กระพริบสั้นๆ เวลากระโดดมาจากแผงโน้ต ให้ตาจับได้ว่าอยู่ตรงไหน */
 @keyframes block-flash {
   from {

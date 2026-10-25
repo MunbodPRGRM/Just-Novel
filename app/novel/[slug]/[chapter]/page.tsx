@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ChapterNav } from "@/components/chapter-nav";
 import { ChapterReader } from "@/components/chapter-reader";
 import { NotesButton } from "@/components/notes-panel";
+import { ReaderBottomBar } from "@/components/reader-bottom-bar";
 import { SiteHeader } from "@/components/site-header";
 import { getChapter, getChapterNeighbours, getNovel, getNovelSlugs } from "@/lib/content";
 
@@ -50,7 +51,8 @@ export default function ChapterPage({ params }: Props) {
         }
       />
 
-      <main className="mx-auto max-w-2xl px-5 pb-16 pt-6 sm:pt-8">
+      {/* เว้นท้ายให้พ้นแถบล่าง (ReaderBottomBar) ตอนเลื่อนสุดแล้วแถบโผล่ */}
+      <main className="mx-auto max-w-2xl px-5 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-6 sm:pt-8">
         <article>
           <h1 className="font-reading text-lg font-semibold leading-snug sm:text-xl">
             {chapter.title}
@@ -71,6 +73,14 @@ export default function ChapterPage({ params }: Props) {
           next={next}
         />
       </main>
+
+      <ReaderBottomBar
+        novelSlug={novel.slug}
+        currentId={chapter.id}
+        chapters={novel.chapters.map(({ id, title, isExtra }) => ({ id, title, isExtra }))}
+        prev={prev}
+        next={next}
+      />
     </>
   );
 }

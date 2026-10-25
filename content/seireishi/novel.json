@@ -5,15 +5,10 @@
   "translator": "",
   "synopsis": "เรื่องราวของผู้ใช้ภูตที่ใครๆ ก็เชื่อว่าเขาเก็บพลังที่แท้จริงเอาไว้ ทั้งที่ความจริงแล้วเขาทุ่มสุดกำลังในทุกการต่อสู้มาตลอด",
   "status": "ongoing",
-  "tags": ["แฟนตาซี", "ต่างโลก", "นิยายแปล"],
-  "covers": [
-    "/covers/seireishi_novel1.jpg",
-    "/covers/seireishi_novel2.jpg",
-    "/covers/seireishi_novel3.jpg",
-    "/covers/seireishi_novel4.jpg",
-    "/covers/seireishi_novel4-2.jpg",
-    "/covers/seireishi_novel5.jpg",
-    "/covers/seireishi_manga1.jpg",
-    "/covers/seireishi_manga2.jpg"
-  ]
+  "tags": [
+    "แฟนตาซี",
+    "ต่างโลก",
+    "นิยายแปล"
+  ],
+  "cover": "/covers/seireishi/seireishi_novel5.jpg"
 }
